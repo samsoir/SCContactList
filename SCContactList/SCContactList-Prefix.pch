@@ -1,0 +1,7 @@
+//
+// Prefix header for all source files of the 'SCContactList' target in the 'SCContactList' project
+//
+
+#ifdef __OBJC__
+    #import <Foundation/Foundation.h>
+#endif
