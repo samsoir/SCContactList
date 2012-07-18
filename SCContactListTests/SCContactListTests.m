@@ -101,14 +101,17 @@
         CFRelease(record);
     }
 
-
-    CFErrorRef saveError = NULL;
-    ABAddressBookSave(addressBook, &saveError);
-    
-    if (saveError != NULL)
+    if (ABAddressBookHasUnsavedChanges(addressBook))
     {
-        STFail(@"There was a problem saving the address book record: %@", saveError);
+        CFErrorRef saveError = NULL;
+        ABAddressBookSave(addressBook, &saveError);
+        
+        if (saveError != NULL)
+        {
+            STFail(@"There was a problem saving the address book record: %@", saveError);
+        }        
     }
+
 
     CFRelease(addressBook);
 
