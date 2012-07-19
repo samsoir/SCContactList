@@ -7,6 +7,7 @@
 //
 
 #import "SCContactListTests.h"
+#import "SCContactList.h"
 
 @implementation SCContactListTests
 
@@ -72,7 +73,7 @@
             STFail(@"There was a problem setting an address book value: %@", setABRecordValueError);
         }
 
-        ABMultiValueRef emailMultiValue = ABMultiValueCreateMutable(kABPersonEmailProperty);
+        ABMultiValueRef emailMultiValue = ABMultiValueCreateMutable(kABMultiStringPropertyType);
         ABMultiValueAddValueAndLabel(emailMultiValue, [contactDict valueForKey:@"email"], kABHomeLabel, NULL);
         ABRecordSetValue(record, kABPersonEmailProperty, emailMultiValue, &setABRecordValueError);
 
@@ -81,7 +82,7 @@
             STFail(@"There was a problem setting an address book value: %@", setABRecordValueError);
         }
         
-        ABMultiValueRef phoneMultiValue = ABMultiValueCreateMutable(kABPersonPhoneProperty);
+        ABMultiValueRef phoneMultiValue = ABMultiValueCreateMutable(kABMultiStringPropertyType);
         ABMultiValueAddValueAndLabel(phoneMultiValue, [contactDict valueForKey:@"phone"], kABPersonPhoneMobileLabel, NULL);
         ABRecordSetValue(record, kABPersonPhoneProperty, phoneMultiValue, &setABRecordValueError);
 
@@ -89,7 +90,7 @@
         {
             STFail(@"There was a problem setting an address book value: %@", setABRecordValueError);
         }
-
+        
         CFErrorRef recordError = NULL;
         ABAddressBookAddRecord(addressBook, record, &recordError);
 
@@ -97,7 +98,7 @@
         {
             STFail(@"There was a problem creating an address book record: %@", recordError);
         }
-
+        
         CFRelease(record);
     }
 
@@ -112,21 +113,43 @@
         }        
     }
 
-
     CFRelease(addressBook);
 
 }
 
 - (void)tearDown
 {
+    ABAddressBookRef addressBook = ABAddressBookCreate();
+
     // Tear-down code here.
+    CFArrayRef recordsInserted = ABAddressBookCopyArrayOfAllPeople(addressBook);
+    long recordsCount          = CFArrayGetCount(recordsInserted);
+    int i                      = 0;
+    
+    for (i = 0; i < recordsCount; i += 1)
+    {
+        ABRecordRef eRecord = CFArrayGetValueAtIndex(recordsInserted, i);
+        ABAddressBookRemoveRecord(addressBook, eRecord, NULL);
+        
+    }
+    
+    if (ABAddressBookSave(addressBook, NULL))
+    {
+        NSLog(@"Successfully removed %i contacts", i);
+    }
+    
+    CFRelease(recordsInserted);
     
     [super tearDown];
 }
 
-- (void)testExample
+- (void)testInitializeContactsDatabase
 {
-//    STFail(@"Unit tests are not implemented yet in SCContactListTests");
+    SCContactList *contactList = [[SCContactList alloc] init];
+    
+    int contactCount = [contactList.contactRecords count];
+    
+    STAssertTrue((contactCount == 5), @"contact count should equal 5");
 }
 
 @end

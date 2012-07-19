@@ -65,6 +65,13 @@
         result = YES;
     }
     
+    [self.contactRecords enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+        
+        long objectID = ABRecordGetRecordID([obj anyObject]);
+        
+        NSLog(@"Record ID : %li", objectID);
+    }];
+    
     return result;
 }
 
