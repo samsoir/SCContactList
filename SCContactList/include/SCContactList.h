@@ -25,4 +25,19 @@
  */
 - (BOOL)initializeContactsDatabase;
 
+/*!
+    @method createGroupWithName:
+ 
+    @abstract Creates a group with name supplied. If the
+    group already exists then the existing group is
+    returned, unless the overwrite parameter is set.
+ 
+    @param NSString name
+    @param BOOL overwrite
+ 
+    @return id
+ */
+- (id)createGroupWithName:(NSString *)name
+                overwrite:(BOOL)overwrite;
+
 @end

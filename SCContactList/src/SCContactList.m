@@ -65,15 +65,24 @@
         result = YES;
     }
     
+#ifdef DEBUG
     [self.contactRecords enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
         
         long objectID = ABRecordGetRecordID([obj anyObject]);
         
         NSLog(@"Record ID : %li", objectID);
     }];
+#endif
     
     return result;
 }
+
+- (id)createGroupWithName:(NSString *)name
+                overwrite:(BOOL)overwrite
+{
+    return nil;
+}
+
 
 - (void)dealloc
 {

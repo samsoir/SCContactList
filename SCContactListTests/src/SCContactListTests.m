@@ -16,6 +16,7 @@
     [super setUp];
     
     // Set-up code here.
+    [self tearDown];
     
     int recordNumber                    = 5;
     NSMutableArray *addressBookRecords  = [NSMutableArray arrayWithCapacity:5];
@@ -151,5 +152,11 @@
     
     STAssertTrue((contactCount == 5), @"contact count should equal 5");
 }
+
+- (void)testCreateGroupWithName
+{
+    
+}
+
 
 @end
