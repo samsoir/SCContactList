@@ -191,9 +191,85 @@
 
 - (BOOL)save:(NSError **)error
 {
-    BOOL result = NO;
-
+    BOOL result                  = NO;
+    ABAddressBookRef addressBook = ABAddressBookCreate();
+    CFErrorRef setNameError      = NULL;
     
+    
+    if ( ! ABRecordSetValue(self.groupRecord, kABGroupNameProperty, self.groupName, &setNameError))
+    {
+        if (error != NULL)
+        {
+            *error = (NSError *)setNameError;
+
+            CFRelease(addressBook);
+            
+            return result;
+        }
+    }
+    
+    CFErrorRef addGroupError     = NULL;
+    
+    if ( ! ABAddressBookAddRecord(addressBook, self.groupRecord, &addGroupError))
+    {
+        if (error != NULL)
+        {
+            *error = (NSError *)addGroupError;
+        }
+    }
+    else
+    {
+        CFErrorRef saveError = NULL;
+        
+        if ( ! ABAddressBookSave(addressBook, &saveError))
+        {
+            if (error != NULL)
+            {
+                *error = (NSError *)saveError;
+            }
+        }
+        else
+        {
+            result                 = YES;
+            _groupExistsInDatabase = YES;
+            _groupHasChanges       = NO;
+            self.groupID           = [NSNumber numberWithInt:ABRecordGetRecordID(self.groupRecord)];
+        }
+    }
+    
+    CFRelease(addressBook);
+    
+    return result;
+}
+
+- (BOOL)remove:(NSError **)error
+{
+    BOOL result                  = NO;
+    ABAddressBookRef addressBook = ABAddressBookCreate();
+    CFErrorRef removeError       = NULL;
+
+    if ( ! ABAddressBookRemoveRecord(addressBook, self.groupRecord, &removeError))
+    {
+        if (error != NULL)
+        {
+            *error = (NSError *)removeError;
+        }
+    }
+    else
+    {
+        ABRecordRef groupRecord = ABGroupCreate();
+        [self setABGroupRecord:groupRecord];
+        
+        CFRelease(groupRecord);
+
+        self.groupID           = nil;
+        self.groupName         = nil;
+        result                 = YES;
+        _groupHasChanges       = NO;
+        _groupExistsInDatabase = NO;
+    }
+    
+    CFRelease(addressBook);
     
     return result;
 }

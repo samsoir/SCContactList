@@ -38,6 +38,8 @@
 
 - (BOOL)save:(NSError **)error;
 
+- (BOOL)remove:(NSError **)error;
+
 - (BOOL)isSaved;
 
 - (BOOL)hasChanges;

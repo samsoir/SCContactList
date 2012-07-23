@@ -196,7 +196,7 @@
     {
         ABRecordRef group   = CFArrayGetValueAtIndex(groups, i);
         NSString *groupName = ABRecordCopyValue(group, kABGroupNameProperty);
-        
+                
         if ([groupName isEqualToString:newGroup.groupName])
         {
             newGroupFound = YES;
@@ -207,10 +207,50 @@
     }
     
     STAssertTrue(newGroupFound, @"The new group should be found in the address book");
+    STAssertFalse([newGroup hasChanges], @"The new group should not have changes");
     
     CFRelease(groups);
     CFRelease(addressBook);
     
+}
+
+- (void)testRemove
+{
+    SCContactGroup *existingGroup = [SCContactGroup contactGroupWithName:@"group1"];
+    
+    STAssertTrue([existingGroup isSaved], @"Group 1 should be saved!");
+    
+    NSError *removeError = nil;
+    
+    STAssertTrue([existingGroup remove:&removeError], @"Group should remove itself");
+    STAssertNil(removeError, @"There should be no remove error when deleting a group");
+
+    ABAddressBookRef addressBook = ABAddressBookCreate();
+    CFArrayRef groups            = ABAddressBookCopyArrayOfAllGroups(addressBook);
+    int groupsCount              = CFArrayGetCount(groups);
+    
+    BOOL existingGroupFound      = NO;
+    
+    for (int i = 0; i < groupsCount; i += 1)
+    {
+        ABRecordRef group   = CFArrayGetValueAtIndex(groups, i);
+        NSString *groupName = ABRecordCopyValue(group, kABGroupNameProperty);
+                
+        if ([groupName isEqualToString:existingGroup.groupName])
+        {
+            existingGroupFound = YES;
+            break;
+        }
+        
+        [groupName release];
+    }
+
+    STAssertFalse(existingGroupFound, @"The existing group should not be found in the address book");
+    STAssertFalse([existingGroup hasChanges], @"The existing group should not have changes");
+    STAssertFalse([existingGroup isSaved], @"The Existing group should not be saved");
+    
+    CFRelease(groups);
+    CFRelease(addressBook);
 }
 
 @end
