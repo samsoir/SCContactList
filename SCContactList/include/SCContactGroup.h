@@ -8,21 +8,18 @@
 
 #import <Foundation/Foundation.h>
 #import <AddressBook/AddressBook.h>
+#import "SCContactRecord.h"
 
-@interface SCContactGroup : NSObject {
+@interface SCContactGroup : SCContactRecord {
     NSNumber     *_groupID;
     NSString     *_groupName;
-    BOOL          _groupExistsInDatabase;
-    BOOL          _groupHasChanges;
     
     NSMutableSet *_contacts;
-    ABRecordRef   _groupRecord;
 }
 
 @property (nonatomic, retain) NSNumber      *groupID;
 @property (nonatomic, retain) NSString      *groupName;
 @property (nonatomic, readonly) NSSet       *contacts;
-@property (nonatomic, readonly) ABRecordRef  groupRecord;
 
 #pragma mark - SCContactGroup lifecycle methods
 

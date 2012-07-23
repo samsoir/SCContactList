@@ -7,6 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		7BBAEF2615BDAAEE005CEAEF /* SCContactPerson.m in Sources */ = {isa = PBXBuildFile; fileRef = 7BBAEF2515BDAAEE005CEAEF /* SCContactPerson.m */; };
+		7BBAEF2A15BDAB16005CEAEF /* SCContactPersonTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 7BBAEF2915BDAB16005CEAEF /* SCContactPersonTests.m */; };
+		7BBAEF2D15BDAB72005CEAEF /* SCContactPerson.m in Sources */ = {isa = PBXBuildFile; fileRef = 7BBAEF2515BDAAEE005CEAEF /* SCContactPerson.m */; };
+		7BBAEF3015BDACFC005CEAEF /* SCContactRecord.m in Sources */ = {isa = PBXBuildFile; fileRef = 7BBAEF2F15BDACFC005CEAEF /* SCContactRecord.m */; };
+		7BBAEF3315BDAD23005CEAEF /* SCContactRecord.m in Sources */ = {isa = PBXBuildFile; fileRef = 7BBAEF2F15BDACFC005CEAEF /* SCContactRecord.m */; };
 		7BD9CC4A15B7101B00D6DAA8 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7BD9CC4915B7101B00D6DAA8 /* Foundation.framework */; };
 		7BD9CC5915B7101B00D6DAA8 /* SenTestingKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7BD9CC5815B7101B00D6DAA8 /* SenTestingKit.framework */; };
 		7BD9CC5C15B7101B00D6DAA8 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7BD9CC4915B7101B00D6DAA8 /* Foundation.framework */; };
@@ -46,6 +51,12 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		7BBAEF2515BDAAEE005CEAEF /* SCContactPerson.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCContactPerson.m; sourceTree = "<group>"; };
+		7BBAEF2915BDAB16005CEAEF /* SCContactPersonTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCContactPersonTests.m; sourceTree = "<group>"; };
+		7BBAEF2B15BDAB34005CEAEF /* SCContactPersonTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCContactPersonTests.h; sourceTree = "<group>"; };
+		7BBAEF2C15BDAB47005CEAEF /* SCContactPerson.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCContactPerson.h; sourceTree = "<group>"; };
+		7BBAEF2F15BDACFC005CEAEF /* SCContactRecord.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCContactRecord.m; sourceTree = "<group>"; };
+		7BBAEF3215BDAD1A005CEAEF /* SCContactRecord.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCContactRecord.h; sourceTree = "<group>"; };
 		7BD9CC4615B7101B00D6DAA8 /* libSCContactList.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libSCContactList.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		7BD9CC4915B7101B00D6DAA8 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		7BD9CC4D15B7101B00D6DAA8 /* SCContactList-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "SCContactList-Prefix.pch"; sourceTree = "<group>"; };
@@ -162,6 +173,7 @@
 		7BD9CC7715B8697F00D6DAA8 /* include */ = {
 			isa = PBXGroup;
 			children = (
+				7BBAEF2B15BDAB34005CEAEF /* SCContactPersonTests.h */,
 				7BD9CC9015B89ADB00D6DAA8 /* SCContactGroupTests.h */,
 				7BD9CC7F15B869F900D6DAA8 /* SCContactListTests.h */,
 			);
@@ -173,6 +185,7 @@
 			children = (
 				7BD9CC8015B86A0000D6DAA8 /* SCContactListTests.m */,
 				7BD9CC8E15B89AB900D6DAA8 /* SCContactGroupTests.m */,
+				7BBAEF2915BDAB16005CEAEF /* SCContactPersonTests.m */,
 			);
 			path = src;
 			sourceTree = "<group>";
@@ -180,6 +193,8 @@
 		7BD9CC7915B8699000D6DAA8 /* include */ = {
 			isa = PBXGroup;
 			children = (
+				7BBAEF3215BDAD1A005CEAEF /* SCContactRecord.h */,
+				7BBAEF2C15BDAB47005CEAEF /* SCContactPerson.h */,
 				7BD9CC8A15B871B500D6DAA8 /* SCContactGroup.h */,
 				7BD9CC7B15B869C200D6DAA8 /* SCContactList.h */,
 			);
@@ -191,6 +206,8 @@
 			children = (
 				7BD9CC8815B871AA00D6DAA8 /* SCContactGroup.m */,
 				7BD9CC7C15B869C900D6DAA8 /* SCContactList.m */,
+				7BBAEF2515BDAAEE005CEAEF /* SCContactPerson.m */,
+				7BBAEF2F15BDACFC005CEAEF /* SCContactRecord.m */,
 			);
 			path = src;
 			sourceTree = "<group>";
@@ -295,6 +312,8 @@
 			files = (
 				7BD9CC7D15B869C900D6DAA8 /* SCContactList.m in Sources */,
 				7BD9CC8915B871AA00D6DAA8 /* SCContactGroup.m in Sources */,
+				7BBAEF2615BDAAEE005CEAEF /* SCContactPerson.m in Sources */,
+				7BBAEF3015BDACFC005CEAEF /* SCContactRecord.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -305,6 +324,9 @@
 				7BD9CC8115B86A0000D6DAA8 /* SCContactListTests.m in Sources */,
 				7BD9CC8C15B8720100D6DAA8 /* SCContactGroup.m in Sources */,
 				7BD9CC8F15B89AB900D6DAA8 /* SCContactGroupTests.m in Sources */,
+				7BBAEF2A15BDAB16005CEAEF /* SCContactPersonTests.m in Sources */,
+				7BBAEF2D15BDAB72005CEAEF /* SCContactPerson.m in Sources */,
+				7BBAEF3315BDAD23005CEAEF /* SCContactRecord.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -447,6 +469,7 @@
 				7BD9CC6D15B7101B00D6DAA8 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		7BD9CC6E15B7101B00D6DAA8 /* Build configuration list for PBXNativeTarget "SCContactListTests" */ = {
 			isa = XCConfigurationList;
@@ -455,6 +478,7 @@
 				7BD9CC7015B7101B00D6DAA8 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

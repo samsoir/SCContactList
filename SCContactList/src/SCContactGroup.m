@@ -40,20 +40,6 @@
     return groupID;
 }
 
-- (void)setABGroupRecord:(ABRecordRef)group
-{
-    if (_groupRecord != group)
-    {
-        if (_groupRecord != NULL)
-        {
-            CFRelease(_groupRecord);
-        }
-        
-        CFRetain(group);
-        _groupRecord = group;
-    }
-}
-
 @end
 
 @implementation SCContactGroup
@@ -61,7 +47,6 @@
 @synthesize groupID     = _groupID;
 @synthesize groupName   = _groupName;
 @synthesize contacts    = _contacts;
-@synthesize groupRecord = _groupRecord;
 
 #pragma mark - SCContactGroup lifecycle methods
 
@@ -126,12 +111,12 @@
         self.groupID           = groupID;
         self.groupName         = [groupName autorelease];
 
-        [self setABGroupRecord:group];
+        [self setABRecord:group];
         
         CFRelease(addressBook);
 
-        _groupExistsInDatabase = YES;
-        _groupHasChanges       = NO;
+        _recordExistsInDatabase = YES;
+        _recordHasChanges       = NO;
     }
     
     return self;
@@ -144,12 +129,12 @@
     if (self)
     {
         _contacts               = [[NSMutableSet alloc] initWithCapacity:10];
-        _groupExistsInDatabase  = NO;
-        _groupHasChanges        = NO;
+        _recordExistsInDatabase  = NO;
+        _recordHasChanges        = NO;
         
         ABRecordRef groupRecord = ABGroupCreate();
         
-        [self setABGroupRecord:groupRecord];
+        [self setABRecord:groupRecord];
         
         CFRelease(groupRecord);
     }
@@ -163,11 +148,6 @@
     [_groupName release];
     [_contacts release];
     
-    if (_groupRecord != NULL)
-    {
-        CFRelease(_groupRecord);
-    }
-    
     [super dealloc];
 }
 
@@ -180,12 +160,12 @@
         [_groupName release];
         _groupName = [groupName retain];
         
-        if (_groupExistsInDatabase)
+        if (_recordExistsInDatabase)
         {
-            _groupExistsInDatabase = NO;
+            _recordExistsInDatabase = NO;
         }
         
-        _groupHasChanges = YES;
+        _recordHasChanges = YES;
     }
 }
 
@@ -196,7 +176,7 @@
     CFErrorRef setNameError      = NULL;
     
     
-    if ( ! ABRecordSetValue(self.groupRecord, kABGroupNameProperty, self.groupName, &setNameError))
+    if ( ! ABRecordSetValue(self.ABRecord, kABGroupNameProperty, self.groupName, &setNameError))
     {
         if (error != NULL)
         {
@@ -210,7 +190,7 @@
     
     CFErrorRef addGroupError     = NULL;
     
-    if ( ! ABAddressBookAddRecord(addressBook, self.groupRecord, &addGroupError))
+    if ( ! ABAddressBookAddRecord(addressBook, self.ABRecord, &addGroupError))
     {
         if (error != NULL)
         {
@@ -231,9 +211,9 @@
         else
         {
             result                 = YES;
-            _groupExistsInDatabase = YES;
-            _groupHasChanges       = NO;
-            self.groupID           = [NSNumber numberWithInt:ABRecordGetRecordID(self.groupRecord)];
+            _recordExistsInDatabase = YES;
+            _recordHasChanges       = NO;
+            self.groupID           = [NSNumber numberWithInt:ABRecordGetRecordID(self.ABRecord)];
         }
     }
     
@@ -248,7 +228,7 @@
     ABAddressBookRef addressBook = ABAddressBookCreate();
     CFErrorRef removeError       = NULL;
 
-    if ( ! ABAddressBookRemoveRecord(addressBook, self.groupRecord, &removeError))
+    if ( ! ABAddressBookRemoveRecord(addressBook, self.ABRecord, &removeError))
     {
         if (error != NULL)
         {
@@ -258,15 +238,15 @@
     else
     {
         ABRecordRef groupRecord = ABGroupCreate();
-        [self setABGroupRecord:groupRecord];
+        [self setABRecord:groupRecord];
         
         CFRelease(groupRecord);
 
         self.groupID           = nil;
         self.groupName         = nil;
         result                 = YES;
-        _groupHasChanges       = NO;
-        _groupExistsInDatabase = NO;
+        _recordHasChanges       = NO;
+        _recordExistsInDatabase = NO;
     }
     
     CFRelease(addressBook);
@@ -276,12 +256,12 @@
 
 - (BOOL)isSaved
 {
-    return (_groupExistsInDatabase && ( ! [self hasChanges]));
+    return (_recordExistsInDatabase && ( ! [self hasChanges]));
 }
 
 - (BOOL)hasChanges
 {
-    return _groupHasChanges;
+    return _recordHasChanges;
 }
 
 #pragma mark - SCContactRecord methods
