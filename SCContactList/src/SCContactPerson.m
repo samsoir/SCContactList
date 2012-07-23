@@ -143,6 +143,101 @@
 
 #pragma mark - SCContactGroup methods
 
+- (NSData *)imageDataFromRecord:(ABRecordRef)record
+{
+    NSData *image = nil;
+    
+    if ( ! ABPersonHasImageData(record))
+    {
+        return image;
+    }
+    
+    image = (NSData *)ABPersonCopyImageData(record);
+    
+    return [image autorelease];
+}
+
+- (void)setPersonalProperties:(ABPropertyID *)personalProperties
+          withAccessorMethods:(SEL *)accessorMethods
+                   fromRecord:(ABRecordRef)record
+{
+    int personalPropertiesCount = (sizeof(personalProperties) / sizeof(ABPropertyID));
+    
+    for (int i = 0; i < personalPropertiesCount; i += 1)
+    {
+        ABPropertyID property       = personalProperties[i];
+        SEL accessorMethod          = accessorMethods[i];
+        id propertyValue            = (id)ABRecordCopyValue(record, property);
+        
+        [self performSelector:accessorMethod
+                   withObject:propertyValue];
+        
+        [propertyValue release];
+    }
+}
+
+- (BOOL)loadPersonFromRecord:(ABRecordRef)record
+                       error:(NSError **)error
+{
+    BOOL result = NO;
+    
+    self.image = [self imageDataFromRecord:record];
+    
+    // Load personal properties
+    ABPropertyID personalProperties[] = {
+        kABPersonFirstNameProperty,
+        kABPersonLastNameProperty,
+        kABPersonMiddleNameProperty,
+        kABPersonPrefixProperty,
+        kABPersonSuffixProperty,
+        kABPersonNicknameProperty,
+        kABPersonFirstNamePhoneticProperty,
+        kABPersonLastNamePhoneticProperty,
+        kABPersonMiddleNamePhoneticProperty,
+        kABPersonOrganizationProperty,
+        kABPersonJobTitleProperty,
+        kABPersonDepartmentProperty,
+        kABPersonNoteProperty,
+        kABPersonBirthdayProperty
+    };
+    
+    SEL accessorMethods[] = {
+        @selector(setFirstName:),
+        @selector(setLastName:),
+        @selector(setMiddleName:),
+        @selector(setPrefix:),
+        @selector(setSuffix:),
+        @selector(setNickName:),
+        @selector(setFirstNamePhonetic:),
+        @selector(setLastNamePhonetic:),
+        @selector(setMiddleNamePhonetic:),
+        @selector(setOrganization:),
+        @selector(setJobTitle:),
+        @selector(setDepartment:),
+        @selector(setNote:),
+        @selector(setBirthday:)
+    };
+    
+    [self setPersonalProperties:personalProperties
+            withAccessorMethods:accessorMethods
+                     fromRecord:record];
+    
+    
+    // Load multivalue properties
+    
+        // Email
+        // Address
+        // Phone
+        // Instant Message
+        // Social Network
+        // URL
+        // Related Name
+    
+    // Load creation / modification dates
+    
+    return result;
+}
+
 - (BOOL)save:(NSError **)error
 {
     return NO;

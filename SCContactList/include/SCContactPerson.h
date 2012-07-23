@@ -74,8 +74,8 @@
 
 @property (nonatomic, retain) NSString     *note;
 
-@property (nonatomic, readonly) NSDate       *creationDate;
-@property (nonatomic, readonly) NSDate       *modificationDate;
+@property (nonatomic, readonly) NSDate     *creationDate;
+@property (nonatomic, readonly) NSDate     *modificationDate;
 
 #pragma mark - SCContactPerson lifecycle methods
 
@@ -84,6 +84,9 @@
 - (id)initWithContactPersonID:(NSNumber *)personID;
 
 #pragma mark - SCContactPerson state methods
+
+- (BOOL)loadPersonFromRecord:(ABRecordRef)record
+                       error:(NSError **)error;
 
 - (BOOL)save:(NSError **)error;
 
