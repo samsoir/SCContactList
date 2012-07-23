@@ -40,14 +40,38 @@
     return groupID;
 }
 
+- (void)setABGroupRecord:(ABRecordRef)group
+{
+    if (_groupRecord != group)
+    {
+        if (_groupRecord != NULL)
+        {
+            CFRelease(_groupRecord);
+        }
+        
+        CFRetain(group);
+        _groupRecord = group;
+    }
+}
+
 @end
 
 @implementation SCContactGroup
 
-@synthesize groupID   = _groupID;
-@synthesize groupName = _groupName;
+@synthesize groupID     = _groupID;
+@synthesize groupName   = _groupName;
+@synthesize contacts    = _contacts;
+@synthesize groupRecord = _groupRecord;
 
 #pragma mark - SCContactGroup lifecycle methods
+
++ (SCContactGroup *)createGroupWithName:(NSString *)groupName
+{
+    SCContactGroup *newGroup = [[SCContactGroup alloc] init];    
+    newGroup.groupName       = groupName;
+    
+    return [newGroup autorelease];
+}
 
 + (SCContactGroup *)contactGroupWithName:(NSString *)groupName
 {
@@ -81,14 +105,11 @@
         return nil;
     }
     
-    self = [super init];
+    self = [self init];
 
         
     if (self)
     {
-        _groupExistsInDatabase = NO;
-        
-        // Create conditional SDK ref here
         ABAddressBookRef addressBook = ABAddressBookCreate();
         ABRecordID addressBookID     = [groupID intValue];
         
@@ -100,15 +121,39 @@
             return nil;
         }
                 
-        _groupExistsInDatabase = YES;
-        NSString *groupName    = ABRecordCopyValue(group, kABGroupNameProperty);
+        NSString *groupName    = (NSString *)ABRecordCopyValue(group, kABGroupNameProperty);
         
         self.groupID           = groupID;
         self.groupName         = [groupName autorelease];
 
+        [self setABGroupRecord:group];
+        
         CFRelease(addressBook);
+
+        _groupExistsInDatabase = YES;
+        _groupHasChanges       = NO;
     }
     
+    return self;
+}
+
+- (id)init
+{
+    self = [super init];
+
+    if (self)
+    {
+        _contacts               = [[NSMutableSet alloc] initWithCapacity:10];
+        _groupExistsInDatabase  = NO;
+        _groupHasChanges        = NO;
+        
+        ABRecordRef groupRecord = ABGroupCreate();
+        
+        [self setABGroupRecord:groupRecord];
+        
+        CFRelease(groupRecord);
+    }
+
     return self;
 }
 
@@ -116,18 +161,58 @@
 {
     [_groupID release];
     [_groupName release];
+    [_contacts release];
+    
+    if (_groupRecord != NULL)
+    {
+        CFRelease(_groupRecord);
+    }
     
     [super dealloc];
 }
 
 #pragma mark - SCContactGroup methods
 
+- (void)setGroupName:(NSString *)groupName
+{
+    if (groupName != _groupName)
+    {
+        [_groupName release];
+        _groupName = [groupName retain];
+        
+        if (_groupExistsInDatabase)
+        {
+            _groupExistsInDatabase = NO;
+        }
+        
+        _groupHasChanges = YES;
+    }
+}
+
+- (BOOL)save:(NSError **)error
+{
+    BOOL result = NO;
+
+    
+    
+    return result;
+}
+
+- (BOOL)isSaved
+{
+    return (_groupExistsInDatabase && ( ! [self hasChanges]));
+}
+
+- (BOOL)hasChanges
+{
+    return _groupHasChanges;
+}
 
 #pragma mark - SCContactRecord methods
 
 - (void)addContactRecord:(id)record
 {
-    
+    [_contacts addObject:record];
 }
 
 - (void)removeContact:(id)record

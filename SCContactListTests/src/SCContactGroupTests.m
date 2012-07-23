@@ -85,6 +85,18 @@
     [super tearDown];
 }
 
+- (void)testCreateGroupWithName
+{
+    NSString *groupName = @"testGroup0";
+    
+    SCContactGroup *group = [SCContactGroup createGroupWithName:groupName];
+    
+    STAssertNotNil(group, @"Group should not be nil");
+    STAssertTrue([group isKindOfClass:[SCContactGroup class]], @"Group should be instance of SCContactGroup, got: %@", [group class]);
+    STAssertTrue([group.groupName isEqualToString:groupName], @"Group name '%@' should equal '%@'", group.groupName, groupName);
+    STAssertTrue([group.contacts count] < 1, @"Group contacts should be empty");
+}
+
 - (void)testContactGroupWithID
 {
     NSNumber *badGroupID = nil;
@@ -123,6 +135,82 @@
     
     CFRelease(addressBook);
     CFRelease(groups);
+}
+
+- (void)testAddContactRecord
+{
+    SCContactGroup *group = [SCContactGroup createGroupWithName:@"testAddRecordGroup"];
+    NSObject *testContact = [[[NSObject alloc] init] autorelease];
+    
+    STAssertTrue(([group.contacts count] == 0), @"Number of contacts should equal 0, got: %i", [group.contacts count]);
+    
+    [group addContactRecord:testContact];
+    
+    STAssertTrue(([group.contacts count] == 1), @"Number of contacts should equal 1, got: %i", [group.contacts count]);
+}
+
+- (void)testIsSaved
+{
+    SCContactGroup *newGroup = [SCContactGroup createGroupWithName:@"testAddRecordGroup"];
+
+    STAssertFalse([newGroup isSaved], @"Group should be saved");
+    
+    ABAddressBookRef addressBook = ABAddressBookCreate();
+    CFArrayRef groups            = ABAddressBookCopyArrayOfAllGroups(addressBook);
+    ABRecordRef group0           = CFArrayGetValueAtIndex(groups, 0);
+        
+    SCContactGroup *groupExisting = [SCContactGroup contactGroupWithID:[NSNumber numberWithInt:ABRecordGetRecordID(group0)]];
+
+    STAssertTrue([groupExisting isSaved], @"Group should be saved");
+    
+    groupExisting.groupName = @"newGroupName";
+    
+    STAssertFalse([groupExisting isSaved], @"Group should not be saved");
+}
+
+- (void)testHasChanges
+{
+    SCContactGroup *newGroup = [[SCContactGroup alloc] init];
+    STAssertFalse([newGroup hasChanges], @"Group should not have any changes");
+    
+    newGroup.groupName = @"newGroupName";
+    STAssertTrue([newGroup hasChanges], @"Group should have changes");
+}
+
+- (void)testSave
+{
+    SCContactGroup *newGroup = [SCContactGroup createGroupWithName:@"testNewGroup"];
+    
+    NSError *saveError = nil;
+    
+    STAssertTrue([newGroup save:&saveError], @"Should be able to save a new group");
+    STAssertNil(saveError, @"There should be no save error saving a new group");
+    
+    ABAddressBookRef addressBook = ABAddressBookCreate();
+    CFArrayRef groups            = ABAddressBookCopyArrayOfAllGroups(addressBook);
+    int groupsCount              = CFArrayGetCount(groups);
+    
+    BOOL newGroupFound           = NO;
+    
+    for (int i = 0; i < groupsCount; i += 1)
+    {
+        ABRecordRef group   = CFArrayGetValueAtIndex(groups, i);
+        NSString *groupName = ABRecordCopyValue(group, kABGroupNameProperty);
+        
+        if ([groupName isEqualToString:newGroup.groupName])
+        {
+            newGroupFound = YES;
+            break;
+        }
+        
+        [groupName release];
+    }
+    
+    STAssertTrue(newGroupFound, @"The new group should be found in the address book");
+    
+    CFRelease(groups);
+    CFRelease(addressBook);
+    
 }
 
 @end

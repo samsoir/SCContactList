@@ -10,15 +10,23 @@
 #import <AddressBook/AddressBook.h>
 
 @interface SCContactGroup : NSObject {
-    NSNumber         *_groupID;
-    NSString         *_groupName;
-    BOOL              _groupExistsInDatabase;
+    NSNumber     *_groupID;
+    NSString     *_groupName;
+    BOOL          _groupExistsInDatabase;
+    BOOL          _groupHasChanges;
+    
+    NSMutableSet *_contacts;
+    ABRecordRef   _groupRecord;
 }
 
-@property (nonatomic, retain) NSNumber *groupID;
-@property (nonatomic, retain) NSString *groupName;
+@property (nonatomic, retain) NSNumber      *groupID;
+@property (nonatomic, retain) NSString      *groupName;
+@property (nonatomic, readonly) NSSet       *contacts;
+@property (nonatomic, readonly) ABRecordRef  groupRecord;
 
-#pragma mark - SCContactGroup creation methods
+#pragma mark - SCContactGroup lifecycle methods
+
++ (SCContactGroup *)createGroupWithName:(NSString *)groupName;
 
 + (SCContactGroup *)contactGroupWithName:(NSString *)groupName;
 
@@ -28,6 +36,11 @@
 
 #pragma mark - SCContactGroup methods
 
+- (BOOL)save:(NSError **)error;
+
+- (BOOL)isSaved;
+
+- (BOOL)hasChanges;
 
 #pragma mark - SCContactRecord methods
 
