@@ -95,7 +95,7 @@
             
             return nil;
         }
-        
+                
         _ABRecord               = personRecord;
         _recordExistsInDatabase = NO;
         _recordHasChanges       = NO;
@@ -160,15 +160,14 @@
 - (void)setPersonalProperties:(ABPropertyID *)personalProperties
           withAccessorMethods:(SEL *)accessorMethods
                    fromRecord:(ABRecordRef)record
-{
-    int personalPropertiesCount = (sizeof(personalProperties) / sizeof(ABPropertyID));
-    
-    for (int i = 0; i < personalPropertiesCount; i += 1)
+           numberOfProperties:(int)count
+{    
+    for (int i = 0; i < count; i += 1)
     {
         ABPropertyID property       = personalProperties[i];
         SEL accessorMethod          = accessorMethods[i];
         id propertyValue            = (id)ABRecordCopyValue(record, property);
-        
+          
         [self performSelector:accessorMethod
                    withObject:propertyValue];
         
@@ -179,7 +178,7 @@
 - (BOOL)loadPersonFromRecord:(ABRecordRef)record
                        error:(NSError **)error
 {
-    BOOL result = NO;
+    BOOL result = YES;
     
     self.image = [self imageDataFromRecord:record];
     
@@ -218,9 +217,12 @@
         @selector(setBirthday:)
     };
     
+    int personalPropertiesCount = (sizeof(personalProperties) / sizeof(ABPropertyID));
+    
     [self setPersonalProperties:personalProperties
             withAccessorMethods:accessorMethods
-                     fromRecord:record];
+                     fromRecord:record
+             numberOfProperties:personalPropertiesCount];
     
     
     // Load multivalue properties
@@ -256,6 +258,48 @@
 - (BOOL)hasChanges
 {
     return NO;
+}
+
+- (void)observeValueForKeyPath:(NSString *)keyPath
+                      ofObject:(id)object
+                        change:(NSDictionary *)change
+                       context:(void *)context
+{
+    static NSString *observingProperties[] = {
+        @"firstName",
+        @"lastName",
+        @"middleName",
+        @"prefix",
+        @"suffix",
+        @"nickName",
+        @"firstNamePhonetic",
+        @"lastNamePhonetic",
+        @"middleNamePhonetic",
+        @"organization",
+        @"jobTitle",
+        @"department",
+        @"note",
+        @"birthday",
+        @"email",
+        @"address",
+        @"phoneNumber",
+        @"instantMessage",
+        @"socialProfile",
+        @"url",
+        @"relatedName"
+    };
+    
+    int count = (sizeof(observingProperties) / sizeof(NSString *));
+    
+    for (int i = 0; i < count; i += 1)
+    {
+        if ([observingProperties[i] isEqualToString:keyPath])
+        {
+            _recordHasChanges = YES;
+            break;
+        }
+    }
+    
 }
 
 

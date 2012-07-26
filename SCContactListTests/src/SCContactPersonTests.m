@@ -174,6 +174,103 @@
     STAssertTrue([existingPerson isSaved], @"Existing person should be saved");
 }
 
+- (void)testLoadPersonFromRecordError
+{
+    ABRecordRef subjectRecord = ABPersonCreate();
+    
+    ABPropertyID personalProperties[] = {
+        kABPersonFirstNameProperty,
+        kABPersonLastNameProperty,
+        kABPersonMiddleNameProperty,
+        kABPersonPrefixProperty,
+        kABPersonSuffixProperty,
+        kABPersonNicknameProperty,
+        kABPersonFirstNamePhoneticProperty,
+        kABPersonLastNamePhoneticProperty,
+        kABPersonMiddleNamePhoneticProperty,
+        kABPersonOrganizationProperty,
+        kABPersonJobTitleProperty,
+        kABPersonDepartmentProperty,
+        kABPersonNoteProperty,
+        kABPersonBirthdayProperty
+    };
+        
+    id propertyValues[] = {
+        @"Jane",
+        @"Doe",
+        @"Jenny",
+        @"Mrs",
+        @"Snr",
+        @"Janey",
+        @"Jayne",
+        @"Doh",
+        @"Gen-knee",
+        @"Acme",
+        @"Iron",
+        @"Bell",
+        @"This is a note",
+        [NSDate date]
+    };
+    
+    SEL accessorMethods[] = {
+        @selector(firstName),
+        @selector(lastName),
+        @selector(middleName),
+        @selector(prefix),
+        @selector(suffix),
+        @selector(nickName),
+        @selector(firstNamePhonetic),
+        @selector(lastNamePhonetic),
+        @selector(middleNamePhonetic),
+        @selector(organization),
+        @selector(jobTitle),
+        @selector(department),
+        @selector(note),
+        @selector(birthday)
+    };
+    
+    int counter = (sizeof(personalProperties) / sizeof(ABPropertyID));
+    
+    for (int i = 0; i < counter; i += 1)
+    {
+        CFErrorRef setError = NULL;
+        
+        if ( ! ABRecordSetValue(subjectRecord, personalProperties[i], propertyValues[i], &setError))
+        {
+            STFail(@"Failed setting value: %@ for property: %i", propertyValues[i], personalProperties[i]);
+        }
+    }
 
+    SCContactPerson *subject = [[SCContactPerson alloc] init];
+    NSError *subjectError    = nil;
+    
+    STAssertFalse([subject hasChanges], @"The subject should not have changes");
+    
+    BOOL result = [subject loadPersonFromRecord:subjectRecord
+                                          error:&subjectError];
+    
+    STAssertTrue(result, @"Load person from record should be YES");
+    STAssertTrue([subject hasChanges], @"The subject should have changes");
+    
+    for (int i = 0; i < counter; i += 1)
+    {
+        id returnValue = [subject performSelector:accessorMethods[i]];
+        ABPropertyType type = ABPersonGetTypeOfProperty(personalProperties[i]);
+        
+        if (type == kABStringPropertyType)
+        {
+            NSString *stringValue = (NSString *)returnValue;
+            STAssertTrue([stringValue isEqualToString:propertyValues[i]], @"returnValue: %@ should equal propertyValue[%i]: %@", returnValue, i, propertyValues[i]);
+        }
+        else if (type == kABDateTimePropertyType)
+        {
+            NSDate *dateValue = (NSDate *)returnValue;            
+            STAssertTrue([dateValue isEqualToDate:propertyValues[i]], @"returnValue: %@ should equal propertyValue[%i]: %@", returnValue, i, propertyValues[i]);
+        }
+        
+    }
+    
+    CFRelease(subject);
+}
 
 @end
