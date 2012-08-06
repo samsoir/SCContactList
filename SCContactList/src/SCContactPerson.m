@@ -8,6 +8,58 @@
 
 #import "SCContactPerson.h"
 
+static NSString *observingProperties[] = {
+    @"firstName",
+    @"lastName",
+    @"middleName",
+    @"prefix",
+    @"suffix",
+    @"nickName",
+    @"firstNamePhonetic",
+    @"lastNamePhonetic",
+    @"middleNamePhonetic",
+    @"organization",
+    @"jobTitle",
+    @"department",
+    @"note",
+    @"birthday",
+    @"email",
+    @"address",
+    @"phoneNumber",
+    @"instantMessage",
+    @"socialProfile",
+    @"url",
+    @"relatedName"
+};
+
+@implementation SCContactPerson(Private)
+
+- (void)initializeKeyValueObserving
+{
+    int count = (sizeof(observingProperties) / sizeof(NSString *));
+    
+    for (int i = 0; i < count; i += 1)
+    {
+        [self addObserver:self
+               forKeyPath:observingProperties[i]
+                  options:NSKeyValueObservingOptionNew|NSKeyValueObservingOptionOld
+                  context:nil];
+    }
+}
+
+- (void)deinitializeKeyValueObserving
+{
+    int count = (sizeof(observingProperties) / sizeof(NSString *));
+    
+    for (int i = 0; i < count; i += 1)
+    {
+        [self removeObserver:self
+                  forKeyPath:observingProperties[i]];
+    }
+}
+
+@end
+
 @implementation SCContactPerson
 
 @synthesize image              = _image;
@@ -84,6 +136,8 @@
     
     if (self)
     {
+        [self initializeKeyValueObserving];
+
         ABRecordRef personRecord = ABPersonCreate();
         
         if (personRecord == NULL || ABRecordGetRecordType(personRecord) != kABPersonType)
@@ -106,6 +160,8 @@
 
 - (void)dealloc
 {
+    [self deinitializeKeyValueObserving];
+    
     [_image release];
     
     [_firstName release];
@@ -257,7 +313,7 @@
 
 - (BOOL)hasChanges
 {
-    return NO;
+    return _recordHasChanges;
 }
 
 - (void)observeValueForKeyPath:(NSString *)keyPath
@@ -265,41 +321,9 @@
                         change:(NSDictionary *)change
                        context:(void *)context
 {
-    static NSString *observingProperties[] = {
-        @"firstName",
-        @"lastName",
-        @"middleName",
-        @"prefix",
-        @"suffix",
-        @"nickName",
-        @"firstNamePhonetic",
-        @"lastNamePhonetic",
-        @"middleNamePhonetic",
-        @"organization",
-        @"jobTitle",
-        @"department",
-        @"note",
-        @"birthday",
-        @"email",
-        @"address",
-        @"phoneNumber",
-        @"instantMessage",
-        @"socialProfile",
-        @"url",
-        @"relatedName"
-    };
+    NSLog(@"OBSERVING: %@ = %@", keyPath, change);
     
-    int count = (sizeof(observingProperties) / sizeof(NSString *));
-    
-    for (int i = 0; i < count; i += 1)
-    {
-        if ([observingProperties[i] isEqualToString:keyPath])
-        {
-            _recordHasChanges = YES;
-            break;
-        }
-    }
-    
+    _recordHasChanges = YES;
 }
 
 
