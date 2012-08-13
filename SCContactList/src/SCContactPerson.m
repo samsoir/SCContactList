@@ -35,7 +35,7 @@
 @synthesize instantMessage     = _instantMessage;
 @synthesize socialProfile      = _socialProfile;
 @synthesize url                = _url;
-@synthesize relatedName        = _relatedName;
+@synthesize relatedNames       = _relatedNames;
 
 @synthesize note               = _note;
 
@@ -47,6 +47,17 @@
 + (SCContactPerson *)contactPersonWithID:(NSNumber *)personID
 {
     return [[[SCContactPerson alloc] initWithContactPersonID:personID] autorelease];
+}
+
+- (void)initializeMutableDictionaryPropertiesWithSize:(NSUInteger)size
+{
+    self.email          = [NSMutableDictionary dictionaryWithCapacity:size];
+    self.address        = [NSMutableDictionary dictionaryWithCapacity:size];
+    self.phoneNumber    = [NSMutableDictionary dictionaryWithCapacity:size];
+    self.instantMessage = [NSMutableDictionary dictionaryWithCapacity:size];
+    self.socialProfile  = [NSMutableDictionary dictionaryWithCapacity:size];
+    self.url            = [NSMutableDictionary dictionaryWithCapacity:size];
+    self.relatedNames   = [NSMutableDictionary dictionaryWithCapacity:size];
 }
 
 - (id)initWithContactPersonID:(NSNumber *)personID
@@ -99,6 +110,8 @@
         _ABRecord               = personRecord;
         _recordExistsInDatabase = NO;
         _recordHasChanges       = NO;
+        
+        [self initializeMutableDictionaryPropertiesWithSize:kSCContactDefaultDictionarySize];
     }
     
     return self;
@@ -131,7 +144,7 @@
     [_instantMessage release];
     [_socialProfile release];
     [_url release];
-    [_relatedName release];
+    [_relatedNames release];
     
     [_note release];
     
@@ -140,6 +153,7 @@
     
     [super dealloc];
 }
+
 
 #pragma mark - SCContactGroup methods
 
@@ -175,6 +189,28 @@
     }
 }
 
+- (void)setMultiEmailPropertyWithRecord:(ABRecordRef)record
+{
+    ABMutableMultiValueRef emailMultiValue = ABRecordCopyValue(record, kABPersonEmailProperty);
+    NSArray *emailArray                    = [(NSArray *)ABMultiValueCopyArrayOfAllValues(emailMultiValue) autorelease];
+    
+    int arrayCount       = [emailArray count];
+    NSMutableArray *keys = [NSMutableArray arrayWithCapacity:arrayCount];
+    
+    for (int i = 0; i < arrayCount; i += 1)
+    {
+        NSString *arrayKey = [(NSString *)ABMultiValueCopyLabelAtIndex(emailMultiValue, i) autorelease];
+        
+        [keys addObject:arrayKey];
+    }
+    
+    CFRelease(emailMultiValue);
+    
+    NSMutableDictionary *emailAddresses = [NSMutableDictionary dictionaryWithObjects:emailArray
+                                                                             forKeys:keys];
+    self.email = emailAddresses;
+}
+
 - (BOOL)loadPersonFromRecord:(ABRecordRef)record
                        error:(NSError **)error
 {
@@ -200,7 +236,7 @@
         kABPersonBirthdayProperty
     };
     
-    SEL accessorMethods[] = {
+    SEL personalPropertiesAccessorMethods[] = {
         @selector(setFirstName:),
         @selector(setLastName:),
         @selector(setMiddleName:),
@@ -220,20 +256,39 @@
     int personalPropertiesCount = (sizeof(personalProperties) / sizeof(ABPropertyID));
     
     [self setPersonalProperties:personalProperties
-            withAccessorMethods:accessorMethods
+            withAccessorMethods:personalPropertiesAccessorMethods
                      fromRecord:record
              numberOfProperties:personalPropertiesCount];
     
     
-    // Load multivalue properties
+    // Load simple multivalue properties
+    [self setMultiEmailPropertyWithRecord:record];
     
-        // Email
+    ABPropertyID simpleMultivalues[] = {
+        kABPersonEmailProperty,
+        kABPersonPhoneProperty,
+        kABPersonInstantMessageProperty,
+        kABPersonSocialProfileProperty,
+        kABPersonURLProperty,
+        kABPersonRelatedNamesProperty
+    };
+    
+    SEL personPropertiesSimpleMultivalueAccessorMethods[] = {
+        @selector(setEmail:forKey:),
+        @selector(setPhoneNumber:forKey:),
+        @selector(setInstantMessage:forKey:),
+        @selector(setSocialProfile:forKey:),
+        @selector(setURL:forKey:),
+        @selector(setRelatedNames:forKey:)
+    };
+    
+    // Load complex multivalue properties
+    ABPropertyID complexMultivalues[] = {
+        kABPersonAddressProperty
+    };
+    
         // Address
-        // Phone
-        // Instant Message
-        // Social Network
-        // URL
-        // Related Name
+
     
     // Load creation / modification dates
     
