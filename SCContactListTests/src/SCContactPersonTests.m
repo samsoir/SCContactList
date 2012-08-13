@@ -14,6 +14,166 @@
 
 @synthesize records = _records;
 
+- (NSArray *)fixtureData
+{
+    NSArray *contactData = [NSArray arrayWithObjects:
+        @"Jane",
+        @"Doe",
+        @"Jenny",
+        @"Mrs",
+        @"Snr",
+        @"Janey",
+        @"Jayne",
+        @"Doh",
+        @"Gen-knee",
+        @"Acme",
+        @"Iron",
+        @"Bell",
+        @"This is a note",
+        [NSDate date],
+        nil];
+    
+    return contactData;
+}
+
+- (NSDictionary *)fixtureHomeAddress
+{
+    return [NSDictionary dictionaryWithObjectsAndKeys:
+            @"4800 N Kenmore Ave", kABPersonAddressStreetKey,
+            @"Chicago", kABPersonAddressCityKey,
+            @"Illinois", kABPersonAddressStateKey,
+            @"60640", kABPersonAddressZIPKey,
+            @"United States", kABPersonAddressCountryKey,
+            @"us", kABPersonAddressCountryCodeKey, nil];
+}
+
+- (NSDictionary *)fixtureWorkAddress
+{
+    return [NSDictionary dictionaryWithObjectsAndKeys:
+            @"15 Kimberely Avenue", kABPersonAddressStreetKey,
+            @"London", kABPersonAddressCityKey,
+            @"United Kingdom", kABPersonAddressCountryKey,
+            @"SE15 4YZ", kABPersonAddressZIPKey,
+            @"uk", kABPersonAddressCountryCodeKey, nil];
+}
+
+- (NSString *)fixtureHomeEmail
+{
+    return @"home@test.com";
+}
+
+- (NSString *)fixtureWorkEmail
+{
+    return @"work@test.com";
+}
+
+- (NSString *)fixtureMainPhone
+{
+    return @"+17733556677";
+}
+
+- (NSString *)fixtureIPhone
+{
+    return @"+17733445566";
+}
+
+- (NSString *)fixtureWorkPhone
+{
+    return @"+441206337343";
+}
+
+- (ABRecordRef)createTestAddressBookRecord
+{
+    ABRecordRef subjectRecord = ABPersonCreate();
+    
+    // Create a couple of addresses
+    NSDictionary *addressHome = [self fixtureHomeAddress];
+    NSDictionary *addressWork = [self fixtureWorkAddress];
+    
+    ABMutableMultiValueRef addressValue = ABMultiValueCreateMutable(kABPersonAddressProperty);
+    
+    ABMultiValueInsertValueAndLabelAtIndex(addressValue, addressHome, kABHomeLabel, 0, NULL);
+    ABMultiValueInsertValueAndLabelAtIndex(addressValue, addressWork, kABWorkLabel, 1, NULL);
+    
+    CFErrorRef addressSetError = NULL;
+    
+    if ( ! ABRecordSetValue(subjectRecord, kABPersonAddressProperty, addressValue, &addressSetError))
+    {
+        STFail(@"Unable to set Address value with error: %@", addressSetError);
+    }
+    
+    // Create a couple of email addresses
+    NSString *emailHome = [self fixtureHomeEmail];
+    NSString *emailWork = [self fixtureWorkEmail];
+    
+    ABMutableMultiValueRef emailValue = ABMultiValueCreateMutable(kABPersonEmailProperty);
+    
+    ABMultiValueInsertValueAndLabelAtIndex(emailValue, emailHome, kABHomeLabel, 0, NULL);
+    ABMultiValueInsertValueAndLabelAtIndex(emailValue, emailWork, kABWorkLabel, 1, NULL);
+    
+    CFErrorRef emailSetError = NULL;
+    
+    if ( ! ABRecordSetValue(subjectRecord, kABPersonEmailProperty, emailValue, &emailSetError))
+    {
+        STFail(@"Unable to set email address value with error: %@", emailSetError);
+    }
+    
+    // Create a couple of phone numbers
+    NSString *phoneMain = [self fixtureMainPhone];
+    NSString *iphone    = [self fixtureIPhone];
+    NSString *phoneWork = [self fixtureWorkPhone];
+    
+    ABMutableMultiValueRef phoneValue = ABMultiValueCreateMutable(kABPersonPhoneProperty);
+    
+    ABMultiValueInsertValueAndLabelAtIndex(phoneValue, phoneMain, kABPersonPhoneMainLabel, 0, NULL);
+    ABMultiValueInsertValueAndLabelAtIndex(phoneValue, iphone, kABPersonPhoneIPhoneLabel, 1, NULL);
+    ABMultiValueInsertValueAndLabelAtIndex(phoneValue, phoneWork, kABWorkLabel, 2, NULL);
+    
+    CFErrorRef phoneSetError = NULL;
+    
+    if ( ! ABRecordSetValue(subjectRecord, kABPersonPhoneProperty, phoneValue, &phoneSetError))
+    {
+        STFail(@"Unable to set phone value with error: %@", phoneSetError);
+    }
+    
+    ABPropertyID personalProperties[] = {
+        kABPersonFirstNameProperty,
+        kABPersonLastNameProperty,
+        kABPersonMiddleNameProperty,
+        kABPersonPrefixProperty,
+        kABPersonSuffixProperty,
+        kABPersonNicknameProperty,
+        kABPersonFirstNamePhoneticProperty,
+        kABPersonLastNamePhoneticProperty,
+        kABPersonMiddleNamePhoneticProperty,
+        kABPersonOrganizationProperty,
+        kABPersonJobTitleProperty,
+        kABPersonDepartmentProperty,
+        kABPersonNoteProperty,
+        kABPersonBirthdayProperty
+    };
+    
+    NSArray *propertyValues = [self fixtureData];
+    
+    int counter = (sizeof(personalProperties) / sizeof(ABPropertyID));
+    
+    for (int i = 0; i < counter; i += 1)
+    {
+        CFErrorRef setError = NULL;
+        
+        if ( ! ABRecordSetValue(subjectRecord, personalProperties[i], propertyValues[i], &setError))
+        {
+            STFail(@"Failed setting value: %@ for property: %i", propertyValues[i], personalProperties[i]);
+        }
+    }
+
+    CFRelease(phoneValue);
+    CFRelease(emailValue);
+    CFRelease(addressValue);
+    
+    return subjectRecord;
+}
+
 - (void)setUp
 {
     [super setUp];
@@ -176,41 +336,18 @@
 
 - (void)testLoadPersonFromRecordError
 {
-    ABRecordRef subjectRecord = ABPersonCreate();
+    ABRecordRef subjectRecord = [self createTestAddressBookRecord];
     
-    ABPropertyID personalProperties[] = {
-        kABPersonFirstNameProperty,
-        kABPersonLastNameProperty,
-        kABPersonMiddleNameProperty,
-        kABPersonPrefixProperty,
-        kABPersonSuffixProperty,
-        kABPersonNicknameProperty,
-        kABPersonFirstNamePhoneticProperty,
-        kABPersonLastNamePhoneticProperty,
-        kABPersonMiddleNamePhoneticProperty,
-        kABPersonOrganizationProperty,
-        kABPersonJobTitleProperty,
-        kABPersonDepartmentProperty,
-        kABPersonNoteProperty,
-        kABPersonBirthdayProperty
-    };
-        
-    id propertyValues[] = {
-        @"Jane",
-        @"Doe",
-        @"Jenny",
-        @"Mrs",
-        @"Snr",
-        @"Janey",
-        @"Jayne",
-        @"Doh",
-        @"Gen-knee",
-        @"Acme",
-        @"Iron",
-        @"Bell",
-        @"This is a note",
-        [NSDate date]
-    };
+    SCContactPerson *subject = [[SCContactPerson alloc] init];
+    NSError *subjectError    = nil;
+    
+    STAssertFalse([subject hasChanges], @"The subject should not have changes");
+    
+    BOOL result = [subject loadPersonFromRecord:subjectRecord
+                                          error:&subjectError];
+    
+    STAssertTrue(result, @"Load person from record should be YES");
+    STAssertTrue([subject hasChanges], @"The subject should have changes");
     
     SEL accessorMethods[] = {
         @selector(firstName),
@@ -228,46 +365,32 @@
         @selector(note),
         @selector(birthday)
     };
-    
-    int counter = (sizeof(personalProperties) / sizeof(ABPropertyID));
-    
-    for (int i = 0; i < counter; i += 1)
-    {
-        CFErrorRef setError = NULL;
-        
-        if ( ! ABRecordSetValue(subjectRecord, personalProperties[i], propertyValues[i], &setError))
-        {
-            STFail(@"Failed setting value: %@ for property: %i", propertyValues[i], personalProperties[i]);
-        }
-    }
 
-    SCContactPerson *subject = [[SCContactPerson alloc] init];
-    NSError *subjectError    = nil;
+    NSArray *propertyValues = [self fixtureData];
     
-    STAssertFalse([subject hasChanges], @"The subject should not have changes");
-    
-    BOOL result = [subject loadPersonFromRecord:subjectRecord
-                                          error:&subjectError];
-    
-    STAssertTrue(result, @"Load person from record should be YES");
-    STAssertTrue([subject hasChanges], @"The subject should have changes");
+    int counter = (sizeof(accessorMethods) / sizeof(SEL));
     
     for (int i = 0; i < counter; i += 1)
     {
         id returnValue = [subject performSelector:accessorMethods[i]];
-        ABPropertyType type = ABPersonGetTypeOfProperty(personalProperties[i]);
         
-        if (type == kABStringPropertyType)
+        if ([returnValue isKindOfClass:[NSString class]])
         {
             NSString *stringValue = (NSString *)returnValue;
             STAssertTrue([stringValue isEqualToString:propertyValues[i]], @"returnValue: %@ should equal propertyValue[%i]: %@", returnValue, i, propertyValues[i]);
         }
-        else if (type == kABDateTimePropertyType)
-        {
-            NSDate *dateValue = (NSDate *)returnValue;            
-            STAssertTrue([dateValue isEqualToDate:propertyValues[i]], @"returnValue: %@ should equal propertyValue[%i]: %@", returnValue, i, propertyValues[i]);
-        }
     }
+    
+    // Test email
+    STAssertTrue([[subject.email objectForKey:(NSString *)kABHomeLabel] isEqualToString:[self fixtureHomeEmail]], @"Home email :%@ should match returned email: %@", [self fixtureHomeEmail], [subject.email objectForKey:(NSString *)kABHomeLabel]);
+    
+    // Test iPhone
+    STAssertTrue([[subject.phoneNumber objectForKey:(NSString *)kABPersonPhoneIPhoneLabel] isEqualToString:[self fixtureIPhone]], @"Phone (iPhone) :%@ should match returned iPhone: %@", [self fixtureIPhone], [subject.phoneNumber objectForKey:(NSString *)kABPersonPhoneIPhoneLabel]);
+    STAssertNil([subject.phoneNumber objectForKey:@"Home Fax"], @"Home fax should be nil");
+    
+    // Test home address
+    NSDictionary *homeAddress = [subject.address objectForKey:(NSString *)kABHomeLabel];
+    STAssertTrue([[homeAddress objectForKey:@"Street"] isEqualToString:[[self fixtureHomeAddress] objectForKey:@"Street"]], @"Home address street: %@ should match: %@", [homeAddress objectForKey:@"Street"], [[self fixtureHomeAddress] objectForKey:@"Street"]);
     
     CFRelease(subject);
 }

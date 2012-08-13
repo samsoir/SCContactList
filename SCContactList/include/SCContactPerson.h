@@ -45,7 +45,7 @@
     NSMutableDictionary   *_phoneNumber;
     NSMutableDictionary   *_instantMessage;
     NSMutableDictionary   *_socialProfile;
-    NSMutableDictionary   *_url;
+    NSMutableDictionary   *_URL;
     NSMutableDictionary   *_relatedNames;
     
     NSString              *_note;
@@ -79,7 +79,7 @@
 @property (nonatomic, retain) NSMutableDictionary *phoneNumber;
 @property (nonatomic, retain) NSMutableDictionary *instantMessage;
 @property (nonatomic, retain) NSMutableDictionary *socialProfile;
-@property (nonatomic, retain) NSMutableDictionary *url;
+@property (nonatomic, retain) NSMutableDictionary *URL;
 @property (nonatomic, retain) NSMutableDictionary *relatedNames;
 
 @property (nonatomic, retain) NSString            *note;
