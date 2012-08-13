@@ -267,7 +267,6 @@
             NSDate *dateValue = (NSDate *)returnValue;            
             STAssertTrue([dateValue isEqualToDate:propertyValues[i]], @"returnValue: %@ should equal propertyValue[%i]: %@", returnValue, i, propertyValues[i]);
         }
-        
     }
     
     CFRelease(subject);
