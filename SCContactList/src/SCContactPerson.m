@@ -32,34 +32,6 @@ static NSString *observingProperties[] = {
     @"relatedName"
 };
 
-@implementation SCContactPerson(Private)
-
-- (void)initializeKeyValueObserving
-{
-    int count = (sizeof(observingProperties) / sizeof(NSString *));
-    
-    for (int i = 0; i < count; i += 1)
-    {
-        [self addObserver:self
-               forKeyPath:observingProperties[i]
-                  options:NSKeyValueObservingOptionNew|NSKeyValueObservingOptionOld
-                  context:nil];
-    }
-}
-
-- (void)deinitializeKeyValueObserving
-{
-    int count = (sizeof(observingProperties) / sizeof(NSString *));
-    
-    for (int i = 0; i < count; i += 1)
-    {
-        [self removeObserver:self
-                  forKeyPath:observingProperties[i]];
-    }
-}
-
-@end
-
 @implementation SCContactPerson
 
 @synthesize image              = _image;
@@ -148,8 +120,6 @@ static NSString *observingProperties[] = {
     
     if (self)
     {
-        [self initializeKeyValueObserving];
-
         ABRecordRef personRecord = ABPersonCreate();
         
         if (personRecord == NULL || ABRecordGetRecordType(personRecord) != kABPersonType)
@@ -172,9 +142,7 @@ static NSString *observingProperties[] = {
 }
 
 - (void)dealloc
-{
-    [self deinitializeKeyValueObserving];
-    
+{    
     [_image release];
     
     [_firstName release];
@@ -210,6 +178,40 @@ static NSString *observingProperties[] = {
     [super dealloc];
 }
 
+#pragma mark - Key/Value Observing Methods
+
+- (NSArray *)objectKeysToObserve
+{
+    NSArray *keysToObserve = [NSArray arrayWithObjects:
+                              @"firstName",
+                              @"lastName",
+                              @"middleName",
+                              @"prefix",
+                              @"suffix",
+                              @"nickName",
+                              @"firstNamePhonetic",
+                              @"lastNamePhonetic",
+                              @"middleNamePhonetic",
+                              @"organization",
+                              @"jobTitle",
+                              @"department",
+                              @"note",
+                              @"birthday",
+                              @"email",
+                              @"address",
+                              @"phoneNumber",
+                              @"instantMessage",
+                              @"socialProfile",
+                              @"url",
+                              @"relatedName",
+                              nil];
+
+    NSMutableArray *parentKeysToObserve = [[[super objectKeysToObserve] mutableCopy] autorelease];
+    
+    [parentKeysToObserve addObjectsFromArray:keysToObserve];
+    
+    return parentKeysToObserve;
+}
 
 #pragma mark - SCContactGroup methods
 
@@ -477,16 +479,5 @@ static NSString *observingProperties[] = {
 {
     return _recordHasChanges;
 }
-
-- (void)observeValueForKeyPath:(NSString *)keyPath
-                      ofObject:(id)object
-                        change:(NSDictionary *)change
-                       context:(void *)context
-{
-    NSLog(@"OBSERVING: %@ = %@", keyPath, change);
-    
-    _recordHasChanges = YES;
-}
-
 
 @end

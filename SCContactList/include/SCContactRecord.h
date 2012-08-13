@@ -25,4 +25,14 @@
 
 - (BOOL)recordExistsInDatabase;
 
+- (BOOL)reloadModelFromRecord:(ABRecordRef)record;
+
+#pragma mark - Key/Value Observing Methods
+
+- (NSArray *)objectKeysToObserve;
+
+- (void)initializeKeyValueObserving:(NSArray *)keysToObserve options:(int)options;
+
+- (void)deinitializeKeyValueObserving:(NSArray *)keysToUnobserve;
+
 @end
