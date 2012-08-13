@@ -347,7 +347,7 @@
                                           error:&subjectError];
     
     STAssertTrue(result, @"Load person from record should be YES");
-    STAssertTrue([subject hasChanges], @"The subject should have changes");
+    STAssertFalse([subject hasChanges], @"The subject should have changes");
     
     SEL accessorMethods[] = {
         @selector(firstName),

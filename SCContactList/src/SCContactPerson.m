@@ -133,7 +133,8 @@ static NSString *observingProperties[] = {
         }
         
         [self setABRecord:personRecord];
-        _recordExistsInDatabase = YES;
+        
+        [self loadPersonFromRecord:self.ABRecord error:nil];
         
         CFRelease(addressBook);
     }
@@ -164,7 +165,6 @@ static NSString *observingProperties[] = {
         [self initializeMutableDictionaryPropertiesWithSize:kSCContactDefaultDictionarySize];
         
         _ABRecord               = personRecord;
-        _recordExistsInDatabase = NO;
         _recordHasChanges       = NO;
     }
     
@@ -453,6 +453,8 @@ static NSString *observingProperties[] = {
     _creationDate     = (NSDate *)ABRecordCopyValue(record, kABPersonCreationDateProperty);
     _modificationDate = (NSDate *)ABRecordCopyValue(record, kABPersonModificationDateProperty);
     
+    _recordHasChanges = NO;
+    
     return result;
 }
 
@@ -468,7 +470,7 @@ static NSString *observingProperties[] = {
 
 - (BOOL)isSaved
 {
-    return (_recordExistsInDatabase && ! _recordHasChanges);
+    return ([self recordExistsInDatabase] && ! _recordHasChanges);
 }
 
 - (BOOL)hasChanges

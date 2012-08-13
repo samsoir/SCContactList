@@ -11,7 +11,6 @@
 
 @interface SCContactRecord : NSObject {
     ABRecordRef   _ABRecord;
-    BOOL          _recordExistsInDatabase;
     BOOL          _recordHasChanges;
 
 }
@@ -23,5 +22,7 @@
 - (void)setABRecord:(ABRecordRef)record;
 
 - (NSNumber *)recordID;
+
+- (BOOL)recordExistsInDatabase;
 
 @end

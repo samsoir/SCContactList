@@ -38,6 +38,18 @@
     return recordID;
 }
 
+- (BOOL)recordExistsInDatabase
+{
+    BOOL result = NO;
+
+    if (self.ABRecord)
+    {
+        result = (ABRecordGetRecordID(self.ABRecord) != kABRecordInvalidID);
+    }
+
+    return result;
+}
+
 
 #pragma mark - SCContactRecord lifecycle methods
 

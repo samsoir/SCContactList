@@ -115,7 +115,6 @@
         
         CFRelease(addressBook);
 
-        _recordExistsInDatabase = YES;
         _recordHasChanges       = NO;
     }
     
@@ -129,8 +128,7 @@
     if (self)
     {
         _contacts               = [[NSMutableSet alloc] initWithCapacity:10];
-        _recordExistsInDatabase  = NO;
-        _recordHasChanges        = NO;
+        _recordHasChanges       = NO;
         
         ABRecordRef groupRecord = ABGroupCreate();
         
@@ -152,22 +150,6 @@
 }
 
 #pragma mark - SCContactGroup methods
-
-- (void)setGroupName:(NSString *)groupName
-{
-    if (groupName != _groupName)
-    {
-        [_groupName release];
-        _groupName = [groupName retain];
-        
-        if (_recordExistsInDatabase)
-        {
-            _recordExistsInDatabase = NO;
-        }
-        
-        _recordHasChanges = YES;
-    }
-}
 
 - (BOOL)save:(NSError **)error
 {
@@ -210,10 +192,9 @@
         }
         else
         {
-            result                 = YES;
-            _recordExistsInDatabase = YES;
+            result                  = YES;
             _recordHasChanges       = NO;
-            self.groupID           = [NSNumber numberWithInt:ABRecordGetRecordID(self.ABRecord)];
+            self.groupID            = [NSNumber numberWithInt:ABRecordGetRecordID(self.ABRecord)];
         }
     }
     
@@ -246,7 +227,6 @@
         self.groupName         = nil;
         result                 = YES;
         _recordHasChanges       = NO;
-        _recordExistsInDatabase = NO;
     }
     
     CFRelease(addressBook);
@@ -256,7 +236,7 @@
 
 - (BOOL)isSaved
 {
-    return (_recordExistsInDatabase && ( ! [self hasChanges]));
+    return ([self recordExistsInDatabase] && ( ! [self hasChanges]));
 }
 
 - (BOOL)hasChanges
