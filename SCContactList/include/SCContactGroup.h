@@ -37,10 +37,6 @@
 
 - (BOOL)remove:(NSError **)error;
 
-- (BOOL)isSaved;
-
-- (BOOL)hasChanges;
-
 #pragma mark - SCContactRecord methods
 
 - (void)addContactRecord:(id)record;

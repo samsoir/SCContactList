@@ -12,6 +12,8 @@
 
 @synthesize ABRecord = _ABRecord;
 
+#pragma mark - SCContactRecord lifecycle methods
+
 - (id)init
 {
     self = [super init];
@@ -20,10 +22,28 @@
     {
         [self initializeKeyValueObserving:[self objectKeysToObserve]
                                   options:NSKeyValueObservingOptionNew|NSKeyValueObservingOptionOld];
+        
+        [self _resetState];        
     }
     
     return self;
 }
+
+- (void)dealloc
+{
+    [_changesToModel release];
+    
+    if (_ABRecord != NULL)
+    {
+        CFRelease(_ABRecord);
+    }
+    
+    [self deinitializeKeyValueObserving:[self objectKeysToObserve]];
+    
+    [super dealloc];
+}
+
+#pragma mark - SCContactRecord state methods
 
 - (void)setABRecord:(ABRecordRef)record
 {
@@ -63,9 +83,28 @@
     return result;
 }
 
-- (BOOL)reloadModelFromRecord:(ABRecordRef)record
+- (NSDictionary *)changesRequiringPersistence
 {
-    return YES;
+    return [[_changesToModel copy] autorelease];
+}
+
+- (BOOL)hasChanges
+{
+    return ([_changesToModel count] > 0);
+}
+
+- (BOOL)isSaved
+{
+    return ([self recordExistsInDatabase] && ! [self hasChanges]);
+}
+
+- (void)_resetState
+{
+    if (_changesToModel != nil)
+    {
+        [_changesToModel release];
+        _changesToModel = [[NSMutableDictionary alloc] initWithCapacity:20];
+    }
 }
 
 #pragma mark - Key/Value Observing Methods
@@ -102,23 +141,78 @@
                         change:(NSDictionary *)change
                        context:(void *)context
 {
-    NSLog(@"OBSERVING: %@ = %@", keyPath, change);
-    
-    _recordHasChanges = YES;
+#ifdef DEBUG
+    NSLog(@"%@ OBSERVING: %@ = %@", self, keyPath, change);
+#endif
+
+    [_changesToModel setObject:change forKey:keyPath];    
 }
 
-#pragma mark - SCContactRecord lifecycle methods
+#pragma mark - SCContactRecord setup methods
 
-- (void)dealloc
+- (void)setProperties:(ABPropertyID *)properties
+  withAccessorMethods:(SEL *)accessorMethods
+           fromRecord:(ABRecordRef)record
+   numberOfProperties:(int)count
 {
-    if (_ABRecord != NULL)
+    for (int i = 0; i < count; i += 1)
     {
-        CFRelease(_ABRecord);
+        ABPropertyID property       = properties[i];
+        SEL accessorMethod          = accessorMethods[i];
+        id propertyValue            = nil;
+        
+        if (ABPersonGetTypeOfProperty(property) & kABMultiValueMask)
+        {
+            propertyValue = (id)[self mutableDictionaryFromMultiValueProperty:property record:record];
+        }
+        else
+        {
+            propertyValue = [(id)ABRecordCopyValue(record, property) autorelease];
+        }
+        
+        if (propertyValue)
+        {
+            [self performSelector:accessorMethod
+                       withObject:propertyValue];
+        }
+    }
+}
+
+- (NSMutableDictionary *)mutableDictionaryFromMultiValueProperty:(ABPropertyID)property record:(ABRecordRef)record
+{
+    NSMutableDictionary *dictionary = nil;
+    
+    if (property == kABInvalidPropertyType || record == NULL)
+    {
+        return dictionary;
     }
     
-    [self deinitializeKeyValueObserving:[self objectKeysToObserve]];
+    ABMutableMultiValueRef propertyMultiValue = ABRecordCopyValue(record, property);
     
-    [super dealloc];
+    if (propertyMultiValue == NULL)
+    {
+        return dictionary;
+    }
+    
+    NSArray *propertyArray                    = [(NSArray *)ABMultiValueCopyArrayOfAllValues(propertyMultiValue) autorelease];
+    int arrayCount                            = [propertyArray count];
+    NSMutableArray *keys                      = [NSMutableArray arrayWithCapacity:arrayCount];
+    
+    for (int i = 0; i < arrayCount; i += 1)
+    {
+        if (propertyMultiValue != NULL)
+        {
+            NSString *arrayKey = [(NSString *)ABMultiValueCopyLabelAtIndex(propertyMultiValue, i) autorelease];
+            [keys addObject:arrayKey];
+        }
+    }
+    
+    CFRelease(propertyMultiValue);
+    
+    dictionary = [NSMutableDictionary dictionaryWithObjects:propertyArray
+                                                    forKeys:keys];
+    
+    return dictionary;
 }
 
 @end

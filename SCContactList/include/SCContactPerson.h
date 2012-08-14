@@ -19,7 +19,7 @@
 #endif
 
 
-@interface SCContactPerson : SCContactRecord {
+@interface SCContactPerson : SCContactRecord <SCContactRecordPersistence> {
     
     NSData                *_image;
     
@@ -93,17 +93,9 @@
 
 - (id)initWithContactPersonID:(NSNumber *)personID;
 
-#pragma mark - SCContactPerson state methods
+#pragma mark - SCContactPerson property methods
 
-- (BOOL)loadPersonFromRecord:(ABRecordRef)record
-                       error:(NSError **)error;
+- (void)setImageDataFromRecord:(ABRecordRef)record;
 
-- (BOOL)save:(NSError **)error;
-
-- (BOOL)remove:(NSError **)error;
-
-- (BOOL)isSaved;
-
-- (BOOL)hasChanges;
 
 @end

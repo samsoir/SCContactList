@@ -334,7 +334,7 @@
     STAssertTrue([existingPerson isSaved], @"Existing person should be saved");
 }
 
-- (void)testLoadPersonFromRecordError
+- (void)testLoadRecordError
 {
     ABRecordRef subjectRecord = [self createTestAddressBookRecord];
     
@@ -343,8 +343,8 @@
     
     STAssertFalse([subject hasChanges], @"The subject should not have changes");
     
-    BOOL result = [subject loadPersonFromRecord:subjectRecord
-                                          error:&subjectError];
+    BOOL result = [subject loadRecord:subjectRecord
+                                error:&subjectError];
     
     STAssertTrue(result, @"Load person from record should be YES");
     STAssertFalse([subject hasChanges], @"The subject should have changes");

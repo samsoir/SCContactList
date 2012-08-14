@@ -106,7 +106,15 @@ static NSString *observingProperties[] = {
         
         [self setABRecord:personRecord];
         
-        [self loadPersonFromRecord:self.ABRecord error:nil];
+        NSError *loadError = nil;
+        
+        if ( ! [self loadRecord:self.ABRecord error:&loadError])
+        {
+            NSLog(@"Error loading person record: %@ from database, error: %@", self.ABRecord, loadError);
+            CFRelease(addressBook);
+            [self release];
+            return nil;
+        }
         
         CFRelease(addressBook);
     }
@@ -134,8 +142,7 @@ static NSString *observingProperties[] = {
 
         [self initializeMutableDictionaryPropertiesWithSize:kSCContactDefaultDictionarySize];
         
-        _ABRecord               = personRecord;
-        _recordHasChanges       = NO;
+        _ABRecord = personRecord;
     }
     
     return self;
@@ -213,7 +220,7 @@ static NSString *observingProperties[] = {
     return parentKeysToObserve;
 }
 
-#pragma mark - SCContactGroup methods
+#pragma mark - SCContactPerson property methods
 
 - (void)setImageDataFromRecord:(ABRecordRef)record
 {
@@ -225,142 +232,15 @@ static NSString *observingProperties[] = {
     self.image = [(NSData *)ABPersonCopyImageData(record) autorelease];
 }
 
-- (void)setPersonalProperties:(ABPropertyID *)personalProperties
-          withAccessorMethods:(SEL *)accessorMethods
-                   fromRecord:(ABRecordRef)record
-           numberOfProperties:(int)count
-{    
-    for (int i = 0; i < count; i += 1)
-    {
-        ABPropertyID property       = personalProperties[i];
-        SEL accessorMethod          = accessorMethods[i];
-        id propertyValue            = (id)ABRecordCopyValue(record, property);
-        
-        if (propertyValue)
-        {
-            [self performSelector:accessorMethod
-                       withObject:propertyValue];
 
-            [propertyValue release];
-        }
-    }
-}
+#pragma mark - SCContactRecordPersistence protocol methods
 
-- (NSMutableDictionary *)mutableDictionaryFromMultiValueProperty:(ABPropertyID)property record:(ABRecordRef)record
+- (void)reset
 {
-    NSMutableDictionary *dictionary = nil;
     
-    if (property < 1 || record == NULL)
-    {
-        return dictionary;
-    }
-    
-    ABMutableMultiValueRef propertyMultiValue = ABRecordCopyValue(record, property);
-
-    if (propertyMultiValue == NULL)
-    {
-        return dictionary;
-    }
-    
-    NSArray *propertyArray                    = [(NSArray *)ABMultiValueCopyArrayOfAllValues(propertyMultiValue) autorelease];
-    int arrayCount                            = [propertyArray count];
-    NSMutableArray *keys                      = [NSMutableArray arrayWithCapacity:arrayCount];
-    
-    for (int i = 0; i < arrayCount; i += 1)
-    {
-        if (propertyMultiValue != NULL)
-        {
-            NSString *arrayKey = [(NSString *)ABMultiValueCopyLabelAtIndex(propertyMultiValue, i) autorelease];
-            [keys addObject:arrayKey];
-        }
-    }
-    
-    CFRelease(propertyMultiValue);
-    
-    dictionary = [NSMutableDictionary dictionaryWithObjects:propertyArray
-                                                    forKeys:keys];
-    
-    return dictionary;
 }
 
-- (void)setMultiValuePersonalProperties:(ABPropertyID *)personalProperties
-                    withAccessorMethods:(SEL *)accessorMethods
-                             fromRecord:(ABRecordRef)record
-                     numberOfProperties:(int)count
-{
-    for (int i = 0; i < count; i += 1)
-    {
-        ABPropertyID property = personalProperties[i];
-        SEL accessorMethod    = accessorMethods[i];
-
-        NSMutableDictionary *propertyDict = [self mutableDictionaryFromMultiValueProperty:property
-                                                                                   record:record];
-        
-        [self performSelector:accessorMethod withObject:propertyDict];
-    }
-}
-
-- (NSMutableDictionary *)multiDimensionalMutableDictionaryFromMultiValueProperty:(ABPropertyID)property record:(ABRecordRef)record
-{
-    NSMutableDictionary *dictionary = nil;
-    
-    if (property < 1 || record == NULL)
-    {
-        return dictionary;
-    }
-    
-    ABMultiValueRef multiValueProperty = ABRecordCopyValue(record, property);
-    
-    if (multiValueProperty == NULL)
-    {
-        return dictionary;
-    }
-    
-    CFArrayRef propertyArray = ABMultiValueCopyArrayOfAllValues(multiValueProperty);
-    
-    if (propertyArray == NULL)
-    {
-        return dictionary;
-    }
-    
-    int propertyCount = CFArrayGetCount(propertyArray);
-    dictionary = [NSMutableDictionary dictionaryWithCapacity:propertyCount];
-    
-    for (int i = 0; i < propertyCount; i += 1)
-    {
-        NSDictionary *propertyDict = [(NSDictionary *)CFArrayGetValueAtIndex(propertyArray, i) autorelease];
-        NSString *propertyKey      = [(NSString *)ABMultiValueCopyLabelAtIndex(multiValueProperty, i) autorelease];
-
-        [dictionary setObject:propertyDict
-                       forKey:propertyKey];
-    }
-    
-    CFRelease(propertyArray);
-    CFRelease(multiValueProperty);
-    
-    return dictionary;
-}
-
-- (void)setMultiValueComplexPersonalProperties:(ABPropertyID *)personalProperties
-                           withAccessorMethods:(SEL *)accessorMethods
-                                    fromRecord:(ABRecordRef)record
-                            numberOfProperties:(int)count
-{
-    for (int i = 0; i < count; i += 1)
-    {
-        ABPropertyID property = personalProperties[i];
-        SEL accessorMethod    = accessorMethods[i];
-        
-        NSMutableDictionary *complexProperty = [self multiDimensionalMutableDictionaryFromMultiValueProperty:property
-                                                                                                      record:record];
-        
-        [self performSelector:accessorMethod
-                   withObject:complexProperty];
-    }
-}
-
-- (BOOL)loadPersonFromRecord:(ABRecordRef)record
-                       error:(NSError **)error
+- (BOOL)loadRecord:(ABRecordRef)record error:(NSError **)error
 {
     BOOL result = YES;
     
@@ -379,7 +259,14 @@ static NSString *observingProperties[] = {
         kABPersonJobTitleProperty,
         kABPersonDepartmentProperty,
         kABPersonNoteProperty,
-        kABPersonBirthdayProperty
+        kABPersonBirthdayProperty,
+        kABPersonEmailProperty,
+        kABPersonPhoneProperty,
+        kABPersonInstantMessageProperty,
+        kABPersonSocialProfileProperty,
+        kABPersonURLProperty,
+        kABPersonRelatedNamesProperty,
+        kABPersonAddressProperty
     };
     
     SEL personalPropertiesAccessorMethods[] = {
@@ -396,88 +283,43 @@ static NSString *observingProperties[] = {
         @selector(setJobTitle:),
         @selector(setDepartment:),
         @selector(setNote:),
-        @selector(setBirthday:)
-    };
-    
-    int personalPropertiesCount = (sizeof(personalProperties) / sizeof(ABPropertyID));
-    
-    [self setPersonalProperties:personalProperties
-            withAccessorMethods:personalPropertiesAccessorMethods
-                     fromRecord:record
-             numberOfProperties:personalPropertiesCount];
-    
-    // Load image data
-    [self setImageDataFromRecord:record];
-    
-    // Load simple multivalue properties    
-    ABPropertyID simpleMultiValues[] = {
-        kABPersonEmailProperty,
-        kABPersonPhoneProperty,
-        kABPersonInstantMessageProperty,
-        kABPersonSocialProfileProperty,
-        kABPersonURLProperty,
-        kABPersonRelatedNamesProperty
-    };
-    
-    SEL personPropertiesSimpleMultiValueAccessorMethods[] = {
+        @selector(setBirthday:),
         @selector(setEmail:),
         @selector(setPhoneNumber:),
         @selector(setInstantMessage:),
         @selector(setSocialProfile:),
         @selector(setURL:),
-        @selector(setRelatedNames:)
-    };
-    
-    int multiValuePropertiesCount = (sizeof(simpleMultiValues) / sizeof(ABPropertyID));
-    
-    [self setMultiValuePersonalProperties:simpleMultiValues
-                      withAccessorMethods:personPropertiesSimpleMultiValueAccessorMethods
-                               fromRecord:record
-                       numberOfProperties:multiValuePropertiesCount];
-    
-    // Load complex multivalue properties
-    ABPropertyID complexMultiValues[] = {
-        kABPersonAddressProperty
-    };
-    
-    SEL complexMultiValueAccessorMethods[] = {
+        @selector(setRelatedNames:),
         @selector(setAddress:)
     };
     
-    int complexMultiValuePropertiesCount = (sizeof(complexMultiValues) / sizeof(ABPropertyID));
+    int personalPropertiesCount = (sizeof(personalProperties) / sizeof(ABPropertyID));
     
-    [self setMultiValueComplexPersonalProperties:complexMultiValues
-                             withAccessorMethods:complexMultiValueAccessorMethods
-                                      fromRecord:record
-                              numberOfProperties:complexMultiValuePropertiesCount];
+    [self setProperties:personalProperties
+    withAccessorMethods:personalPropertiesAccessorMethods
+             fromRecord:record
+     numberOfProperties:personalPropertiesCount];
+    
+    // Load image data
+    [self setImageDataFromRecord:record];
     
     // Load creation / modification dates
     _creationDate     = (NSDate *)ABRecordCopyValue(record, kABPersonCreationDateProperty);
     _modificationDate = (NSDate *)ABRecordCopyValue(record, kABPersonModificationDateProperty);
     
-    _recordHasChanges = NO;
+    [self _resetState];
     
-    return result;
+    return result;    
 }
 
-- (BOOL)save:(NSError **)error
+- (BOOL)saveRecord:(ABRecordRef)record error:(NSError **)error
 {
     return NO;
 }
 
-- (BOOL)remove:(NSError **)error
+- (BOOL)deleteRecord:(ABRecordRef)record error:(NSError **)error
 {
     return NO;
-}
-
-- (BOOL)isSaved
-{
-    return ([self recordExistsInDatabase] && ! _recordHasChanges);
-}
-
-- (BOOL)hasChanges
-{
-    return _recordHasChanges;
 }
 
 @end

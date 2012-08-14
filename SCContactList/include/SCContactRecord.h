@@ -10,9 +10,8 @@
 #import <AddressBook/AddressBook.h>
 
 @interface SCContactRecord : NSObject {
-    ABRecordRef   _ABRecord;
-    BOOL          _recordHasChanges;
-
+    ABRecordRef          _ABRecord;
+    NSMutableDictionary *_changesToModel;
 }
 
 @property (nonatomic, readonly) ABRecordRef ABRecord;
@@ -25,7 +24,13 @@
 
 - (BOOL)recordExistsInDatabase;
 
-- (BOOL)reloadModelFromRecord:(ABRecordRef)record;
+- (NSDictionary *)changesRequiringPersistence;
+
+- (BOOL)hasChanges;
+
+- (BOOL)isSaved;
+
+- (void)_resetState;
 
 #pragma mark - Key/Value Observing Methods
 
@@ -34,5 +39,20 @@
 - (void)initializeKeyValueObserving:(NSArray *)keysToObserve options:(int)options;
 
 - (void)deinitializeKeyValueObserving:(NSArray *)keysToUnobserve;
+
+#pragma mark - SCContactRecord setup methods
+
+- (void)setProperties:(ABPropertyID *)properties withAccessorMethods:(SEL *)accessorMethods fromRecord:(ABRecordRef)record numberOfProperties:(int)count;
+- (NSMutableDictionary *)mutableDictionaryFromMultiValueProperty:(ABPropertyID)property record:(ABRecordRef)record;
+
+@end
+
+@protocol SCContactRecordPersistence <NSObject>
+
+#pragma mark - Persistence Methods
+
+- (BOOL)loadRecord:(ABRecordRef)record error:(NSError **)error;
+- (BOOL)saveRecord:(ABRecordRef)record error:(NSError **)error;
+- (BOOL)deleteRecord:(ABRecordRef)record error:(NSError **)error;
 
 @end

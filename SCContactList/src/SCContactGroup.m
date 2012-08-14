@@ -114,8 +114,8 @@
         [self setABRecord:group];
         
         CFRelease(addressBook);
-
-        _recordHasChanges       = NO;
+        
+        [self _resetState];
     }
     
     return self;
@@ -128,7 +128,6 @@
     if (self)
     {
         _contacts               = [[NSMutableSet alloc] initWithCapacity:10];
-        _recordHasChanges       = NO;
         
         ABRecordRef groupRecord = ABGroupCreate();
         
@@ -156,7 +155,6 @@
     BOOL result                  = NO;
     ABAddressBookRef addressBook = ABAddressBookCreate();
     CFErrorRef setNameError      = NULL;
-    
     
     if ( ! ABRecordSetValue(self.ABRecord, kABGroupNameProperty, self.groupName, &setNameError))
     {
@@ -193,13 +191,14 @@
         else
         {
             result                  = YES;
-            _recordHasChanges       = NO;
             self.groupID            = [NSNumber numberWithInt:ABRecordGetRecordID(self.ABRecord)];
         }
     }
     
     CFRelease(addressBook);
     
+    [self _resetState];
+
     return result;
 }
 
@@ -226,22 +225,13 @@
         self.groupID           = nil;
         self.groupName         = nil;
         result                 = YES;
-        _recordHasChanges       = NO;
     }
     
     CFRelease(addressBook);
     
+    [self _resetState];
+
     return result;
-}
-
-- (BOOL)isSaved
-{
-    return ([self recordExistsInDatabase] && ( ! [self hasChanges]));
-}
-
-- (BOOL)hasChanges
-{
-    return _recordHasChanges;
 }
 
 #pragma mark - SCContactRecord methods
