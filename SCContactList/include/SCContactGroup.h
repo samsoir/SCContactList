@@ -10,7 +10,7 @@
 #import <AddressBook/AddressBook.h>
 #import "SCContactRecord.h"
 
-@interface SCContactGroup : SCContactRecord {
+@interface SCContactGroup : SCContactRecord <SCContactRecordPersistence> {
     NSNumber     *_groupID;
     NSString     *_groupName;
     

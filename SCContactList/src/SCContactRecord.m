@@ -90,11 +90,14 @@
 
 - (BOOL)hasChanges
 {
+    NSLog(@"Recorded changes: %@, %i in state: %i", _changesToModel, [_changesToModel count], ([_changesToModel count] > 0));
     return ([_changesToModel count] > 0);
 }
 
 - (BOOL)isSaved
 {
+    NSLog(@"%@ record exists: %i has changes: %i", self, [self recordExistsInDatabase], [self hasChanges]);
+    
     return ([self recordExistsInDatabase] && ! [self hasChanges]);
 }
 
@@ -103,15 +106,16 @@
     if (_changesToModel != nil)
     {
         [_changesToModel release];
-        _changesToModel = [[NSMutableDictionary alloc] initWithCapacity:20];
     }
+
+    _changesToModel = [[NSMutableDictionary alloc] initWithCapacity:20];
 }
 
 #pragma mark - Key/Value Observing Methods
 
 - (NSArray *)objectKeysToObserve
 {
-    return [NSArray arrayWithObjects:@"ABRecord", nil];
+    return [NSArray array];
 }
 
 - (void)initializeKeyValueObserving:(NSArray *)keysToObserve options:(int)options
@@ -122,7 +126,6 @@
                forKeyPath:key
                   options:options
                   context:[self class]];
-        
     }
 }
 
@@ -157,9 +160,9 @@
 {
     for (int i = 0; i < count; i += 1)
     {
-        ABPropertyID property       = properties[i];
-        SEL accessorMethod          = accessorMethods[i];
-        id propertyValue            = nil;
+        ABPropertyID property = properties[i];
+        SEL accessorMethod    = accessorMethods[i];
+        id propertyValue      = nil;
         
         if (ABPersonGetTypeOfProperty(property) & kABMultiValueMask)
         {
@@ -194,9 +197,9 @@
         return dictionary;
     }
     
-    NSArray *propertyArray                    = [(NSArray *)ABMultiValueCopyArrayOfAllValues(propertyMultiValue) autorelease];
-    int arrayCount                            = [propertyArray count];
-    NSMutableArray *keys                      = [NSMutableArray arrayWithCapacity:arrayCount];
+    NSArray *propertyArray = [(NSArray *)ABMultiValueCopyArrayOfAllValues(propertyMultiValue) autorelease];
+    int arrayCount         = [propertyArray count];
+    NSMutableArray *keys   = [NSMutableArray arrayWithCapacity:arrayCount];
     
     for (int i = 0; i < arrayCount; i += 1)
     {

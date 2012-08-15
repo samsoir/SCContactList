@@ -165,8 +165,7 @@
     
     groupExisting.groupName = @"newGroupName";
   
-    // PENDING
-//    STAssertFalse([groupExisting isSaved], @"Group should not be saved");
+    STAssertFalse([groupExisting isSaved], @"Group should not be saved");
 }
 
 - (void)testHasChanges
@@ -175,8 +174,7 @@
     STAssertFalse([newGroup hasChanges], @"Group should not have any changes");
     
     newGroup.groupName = @"newGroupName";
-    // PENDING
-//    STAssertTrue([newGroup hasChanges], @"Group should have changes");
+    STAssertTrue([newGroup hasChanges], @"Group should have changes");
 }
 
 - (void)testSave

@@ -341,8 +341,6 @@
     SCContactPerson *subject = [[SCContactPerson alloc] init];
     NSError *subjectError    = nil;
     
-    STAssertFalse([subject hasChanges], @"The subject should not have changes");
-    
     BOOL result = [subject loadRecord:subjectRecord
                                 error:&subjectError];
     
@@ -393,6 +391,62 @@
     STAssertTrue([[homeAddress objectForKey:@"Street"] isEqualToString:[[self fixtureHomeAddress] objectForKey:@"Street"]], @"Home address street: %@ should match: %@", [homeAddress objectForKey:@"Street"], [[self fixtureHomeAddress] objectForKey:@"Street"]);
     
     CFRelease(subject);
+}
+
+- (void)testSave
+{
+    ABRecordRef subjectRecord = [self createTestAddressBookRecord];
+    
+    SCContactPerson *subject = [[SCContactPerson alloc] init];
+    [subject setABRecord:subjectRecord];
+
+    NSError *subjectError    = nil;
+    
+    [subject loadRecord:subjectRecord error:&subjectError];
+
+    STAssertTrue([subject saveRecord:subject.ABRecord error:nil], @"Save Record should be TRUE on save with no changes.");
+    
+    NSString *newFirstName  = @"Robert";
+    NSString *newLastName   = @"Clark";
+    NSString *newMiddleName = @"John";
+    NSString *newNickName   = @"Bob";
+
+    NSMutableDictionary *newEmail       = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"bob@test.com", kABHomeLabel, nil];
+    NSMutableDictionary *newPhone       = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"+442074503900", kABPersonPhoneIPhoneLabel, nil];
+    NSMutableDictionary *newHomeAddress = [[[self fixtureHomeAddress] mutableCopy] autorelease];
+    [newHomeAddress setObject:@"1 Kiln Cottages" forKey:@"Street"];
+    
+    NSMutableDictionary *newAddress = [NSMutableDictionary dictionaryWithObject:newHomeAddress forKey:(NSString *)kABHomeLabel];
+    
+    subject.firstName   = newFirstName;
+    subject.lastName    = newLastName;
+    subject.middleName  = newMiddleName;
+    subject.nickName    = newNickName;
+    subject.email       = newEmail;
+    subject.phoneNumber = newPhone;
+    subject.address     = newAddress;
+    
+    STAssertTrue([subject saveRecord:subject.ABRecord error:nil], @"Save record should be TRUE");
+    
+    NSString *savedFirstName  = [(NSString *)ABRecordCopyValue(subjectRecord, kABPersonFirstNameProperty) autorelease];
+    NSString *savedLastName   = [(NSString *)ABRecordCopyValue(subjectRecord, kABPersonLastNameProperty) autorelease];
+    NSString *savedMiddleName = [(NSString *)ABRecordCopyValue(subjectRecord, kABPersonMiddleNameProperty) autorelease];
+    NSString *savedNickName   = [(NSString *)ABRecordCopyValue(subjectRecord, kABPersonNicknameProperty) autorelease];;
+    
+    ABMultiValueRef addressValue = ABRecordCopyValue(subjectRecord, kABPersonAddressProperty);
+    NSArray *addresses = [(NSArray *)ABMultiValueCopyArrayOfAllValues(addressValue) autorelease];
+    
+    STAssertTrue([subject.firstName isEqualToString:savedFirstName], @"Subject firstname: %@ should match saved firstname: %@", subject.firstName, savedFirstName);
+    STAssertTrue([subject.lastName isEqualToString:savedLastName], @"Subject lastname: %@ should match saved lastname: %@", subject.lastName, savedLastName);
+    STAssertTrue([subject.middleName isEqualToString:savedMiddleName], @"Subject middlename: %@ should match saved middlename: %@", subject.middleName, savedMiddleName);
+    STAssertTrue([subject.nickName isEqualToString:savedNickName], @"Subject nickname: %@ should match saved nickname: %@", subject.nickName, savedNickName);
+    
+    NSDictionary *savedAddress = [addresses objectAtIndex:0];
+    
+    STAssertTrue([[[subject.address objectForKey:(NSString *)kABHomeLabel] objectForKey:(NSString *)kABPersonAddressStreetKey] isEqualToString:[savedAddress objectForKey:(NSString *)kABPersonAddressStreetKey]], @"Subject Street Address: %@ should match saved Street Address: %@",[[subject.address objectForKey:(NSString *)kABHomeLabel] objectForKey:(NSString *)kABPersonAddressStreetKey], [savedAddress objectForKey:(NSString *)kABPersonAddressStreetKey]);
+    
+    CFRelease(addressValue);
+    CFRelease(subjectRecord);
 }
 
 @end

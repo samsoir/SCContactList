@@ -49,7 +49,7 @@
 
 @protocol SCContactRecordPersistence <NSObject>
 
-#pragma mark - Persistence Methods
+#pragma mark - SCContactRecordPersistence Methods
 
 - (BOOL)loadRecord:(ABRecordRef)record error:(NSError **)error;
 - (BOOL)saveRecord:(ABRecordRef)record error:(NSError **)error;
