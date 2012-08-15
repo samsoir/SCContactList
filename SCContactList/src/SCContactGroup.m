@@ -106,10 +106,8 @@
             return nil;
         }
                 
-        NSString *groupName    = (NSString *)ABRecordCopyValue(group, kABGroupNameProperty);
-        
-        self.groupID           = groupID;
-        self.groupName         = [groupName autorelease];
+        self.groupID   = groupID;
+        self.groupName = [(NSString *)ABRecordCopyValue(group, kABGroupNameProperty) autorelease];
 
         [self setABRecord:group];
         
@@ -127,8 +125,8 @@
 
     if (self)
     {
-        _contacts               = [[NSMutableSet alloc] initWithCapacity:10];
         ABRecordRef groupRecord = ABGroupCreate();
+        _contacts               = [[NSMutableSet alloc] initWithCapacity:10];
         
         [self setABRecord:groupRecord];
         
@@ -167,7 +165,7 @@
         }
     }
     
-    CFErrorRef addGroupError     = NULL;
+    CFErrorRef addGroupError = NULL;
     
     if ( ! ABAddressBookAddRecord(addressBook, self.ABRecord, &addGroupError))
     {
@@ -189,8 +187,8 @@
         }
         else
         {
-            result                  = YES;
-            self.groupID            = [NSNumber numberWithInt:ABRecordGetRecordID(self.ABRecord)];
+            result       = YES;
+            self.groupID = [NSNumber numberWithInt:ABRecordGetRecordID(self.ABRecord)];
         }
     }
     
@@ -221,9 +219,9 @@
         
         CFRelease(groupRecord);
 
-        self.groupID           = nil;
-        self.groupName         = nil;
-        result                 = YES;
+        self.groupID   = nil;
+        self.groupName = nil;
+        result         = YES;
     }
     
     CFRelease(addressBook);
@@ -242,8 +240,6 @@
     NSMutableArray *parentKeysToObserve = [[[super objectKeysToObserve] mutableCopy] autorelease];
     
     [parentKeysToObserve addObjectsFromArray:keysToObserve];
-    
-    NSLog(@"keys to observe: %@", parentKeysToObserve);
     
     return parentKeysToObserve;
 }
@@ -277,7 +273,6 @@
 {
     BOOL result = YES;
     
-    // Load personal properties
     ABPropertyID groupProperties[] = {
         kABGroupNameProperty
     };
@@ -323,7 +318,7 @@
         }
     }
     
-    CFErrorRef addGroupError     = NULL;
+    CFErrorRef addGroupError = NULL;
     
     if ( ! ABAddressBookAddRecord(addressBook, self.ABRecord, &addGroupError))
     {
@@ -345,8 +340,8 @@
         }
         else
         {
-            result                  = YES;
-            self.groupID            = [NSNumber numberWithInt:ABRecordGetRecordID(self.ABRecord)];
+            result       = YES;
+            self.groupID = [NSNumber numberWithInt:ABRecordGetRecordID(self.ABRecord)];
         }
     }
     
