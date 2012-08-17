@@ -449,4 +449,49 @@
     CFRelease(subjectRecord);
 }
 
+- (void)testDeleteRecordError
+{
+    ABAddressBookRef addressBook = ABAddressBookCreate();
+    
+    // Tear-down code here.
+    NSArray *recordsInserted = [(NSArray *)ABAddressBookCopyArrayOfAllPeople(addressBook) autorelease];
+    
+    ABRecordRef randomRecord = [recordsInserted objectAtIndex:0];
+    ABRecordID recordID      = ABRecordGetRecordID(randomRecord);
+    
+    SCContactPerson *subject = [[[SCContactPerson alloc] init] autorelease];
+    [subject setABRecord:randomRecord];
+    [subject loadRecord:subject.ABRecord error:nil];
+    
+    NSError *deleteError = nil;
+    
+    STAssertTrue([subject deleteRecord:subject.ABRecord error:&deleteError], @"Deleting a valid model should return true");
+    
+    NSArray *recordsRemaining = [(NSArray *)ABAddressBookCopyArrayOfAllPeople(addressBook) autorelease];
+    int count = [recordsRemaining count];
+    
+    for (int i = 0; i < count; i += 1)
+    {
+        ABRecordRef record = recordsRemaining[i];
+        
+        if (ABRecordGetRecordID(record) == recordID)
+        {
+            STFail(@"Found record ID :%i that should be deleted", recordID);
+        }
+    }
+    
+    CFRelease(addressBook);
+}
+
+- (void)testDeleteRecordNotSaved
+{
+    SCContactPerson *subject = [[[SCContactPerson alloc] init] autorelease];
+
+    
+    NSError *deleteError = nil;
+    
+    STAssertFalse([subject deleteRecord:subject.ABRecord error:&deleteError], @"Deleting a valid model should return false");
+    STAssertNotNil(deleteError, @"Delete error should not be nil");
+}
+
 @end

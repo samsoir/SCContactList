@@ -65,7 +65,12 @@
     
     if (_ABRecord != NULL)
     {
-        recordID = [NSNumber numberWithInt:ABRecordGetRecordID(_ABRecord)];
+        ABRecordID abRecordID = ABRecordGetRecordID(_ABRecord);
+        
+        if (abRecordID != kABRecordInvalidID)
+        {
+            recordID = [NSNumber numberWithInt:ABRecordGetRecordID(_ABRecord)];
+        }
     }
     
     return recordID;
@@ -217,5 +222,63 @@
     
     return dictionary;
 }
+
+#pragma mark - SCContactRecordPersistence Methods
+
+- (BOOL)deleteRecord:(ABRecordRef)record error:(NSError **)error
+{
+    BOOL result = NO;
+    
+    if ([self recordID] == nil)
+    {
+        if (error != NULL)
+        {
+            NSDictionary *errorDict = [NSDictionary dictionaryWithObjectsAndKeys:@"This record does not exist in the Address Book database", kSCContactRecrodDeleteErrorKey, nil];
+            *error = [NSError errorWithDomain:kSCContactRecord
+                                         code:kSCContactRecordDeleteError
+                                     userInfo:errorDict];            
+        }
+        
+        return result;
+    }
+    
+    ABAddressBookRef addressBook = ABAddressBookCreate();
+    
+    CFErrorRef deleteError = NULL;
+    
+    if ( ! ABAddressBookRemoveRecord(addressBook, self.ABRecord, &deleteError))
+    {
+        if (error != NULL)
+        {
+            *error = (NSError *)deleteError;
+        }
+        
+        return result;
+    }
+    
+    CFErrorRef saveError = NULL;
+
+    if ( ! ABAddressBookSave(addressBook, &saveError))
+    {
+        if (error != NULL)
+        {
+            *error = (NSError *)saveError;
+        }
+
+        return result;
+    }
+    
+    if (_ABRecord != NULL)
+    {
+        CFRelease(_ABRecord);
+        _ABRecord = NULL;
+    }
+    
+    CFRelease(addressBook);
+    
+    result = YES;
+    return result;
+}
+
 
 @end

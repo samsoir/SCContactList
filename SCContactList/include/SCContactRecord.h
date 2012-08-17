@@ -9,6 +9,14 @@
 #import <Foundation/Foundation.h>
 #import <AddressBook/AddressBook.h>
 
+#ifndef kSCContactRecord
+#define kSCContactRecord @"SCContactRecord"
+
+#define kSCContactRecordDeleteError 10001
+#define kSCContactRecrodDeleteErrorKey @"errorMessage"
+
+#endif
+
 @interface SCContactRecord : NSObject {
     ABRecordRef          _ABRecord;
     NSMutableDictionary *_changesToModel;
@@ -44,6 +52,10 @@
 
 - (void)setProperties:(ABPropertyID *)properties withAccessorMethods:(SEL *)accessorMethods fromRecord:(ABRecordRef)record numberOfProperties:(int)count;
 - (NSMutableDictionary *)mutableDictionaryFromMultiValueProperty:(ABPropertyID)property record:(ABRecordRef)record;
+
+#pragma mark - SCContactRecordPersistence Methods
+
+- (BOOL)deleteRecord:(ABRecordRef)record error:(NSError **)error;
 
 @end
 

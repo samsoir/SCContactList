@@ -201,34 +201,7 @@
 
 - (BOOL)remove:(NSError **)error
 {
-    BOOL result                  = NO;
-    ABAddressBookRef addressBook = ABAddressBookCreate();
-    CFErrorRef removeError       = NULL;
-
-    if ( ! ABAddressBookRemoveRecord(addressBook, self.ABRecord, &removeError))
-    {
-        if (error != NULL)
-        {
-            *error = (NSError *)removeError;
-        }
-    }
-    else
-    {
-        ABRecordRef groupRecord = ABGroupCreate();
-        [self setABRecord:groupRecord];
-        
-        CFRelease(groupRecord);
-
-        self.groupID   = nil;
-        self.groupName = nil;
-        result         = YES;
-    }
-    
-    CFRelease(addressBook);
-    
-    [self _resetState];
-
-    return result;
+    return [self deleteRecord:self.ABRecord error:error];
 }
 
 #pragma mark - Key/Value Observing Methods
@@ -354,7 +327,7 @@
 
 - (BOOL)deleteRecord:(ABRecordRef)record error:(NSError **)error
 {
-    return NO;
+    return [super deleteRecord:record error:error];
 }
 
 @end

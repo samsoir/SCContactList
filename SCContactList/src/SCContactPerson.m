@@ -483,7 +483,7 @@
 
 - (BOOL)deleteRecord:(ABRecordRef)record error:(NSError **)error
 {
-    return NO;
+    return [super deleteRecord:record error:error];
 }
 
 @end
