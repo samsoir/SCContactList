@@ -7,7 +7,7 @@
 //
 
 #import "SCContactGroupTests.h"
-#import "SCContactGroup.h"
+#import "SCContactList.h"
 
 @implementation SCContactGroupTests
 

@@ -6,7 +6,7 @@
 //  Copyright (c) 2012 Sittercity, Inc. All rights reserved.
 //
 
-#import "SCContactPerson.h"
+#import "SCContactList.h"
 
 @implementation SCContactPerson(Private)
 
@@ -88,6 +88,64 @@
     return ABPersonProperty;
 }
 
+- (BOOL)persistRecord:(ABRecordRef)record addressBook:(ABAddressBookRef)addressBook error:(NSError **)error
+{
+    BOOL result                  = NO;
+    
+    NSDictionary *changesToModel = [self changesRequiringPersistence];
+    NSError *decorateError       = nil;
+    
+    // Decorate record
+    [self decorateABRecord:&record
+          fieldsToDecorate:changesToModel
+                     error:&decorateError];
+    
+    CFErrorRef addError = NULL;
+    
+    if ( ! ABAddressBookAddRecord(addressBook, record, &addError))
+    {
+        if (addError && error != NULL)
+        {
+            *error = (NSError *)addError;
+        }
+    }
+    
+    CFErrorRef saveError = NULL;
+    
+    if ( ! ABAddressBookSave(addressBook, &saveError))
+    {
+        if (error != NULL)
+        {
+            *error = (NSError *)saveError;
+        }
+    }
+    else
+    {
+        result = YES;
+        [self updateRecordModificationDates:record];
+        [self _resetState];
+    }
+    
+    CFRelease(addressBook);
+    
+    return result;
+}
+
+- (void)updateRecordModificationDates:(ABRecordRef)record
+{
+    if (_creationDate != nil)
+    {
+        [_creationDate release];
+    }
+    
+    if (_modificationDate != nil)
+    {
+        [_modificationDate release];
+    }
+    
+    _creationDate     = (NSDate *)ABRecordCopyValue(record, kABPersonCreationDateProperty);
+    _modificationDate = (NSDate *)ABRecordCopyValue(record, kABPersonModificationDateProperty);
+}
 
 @end
 
@@ -127,9 +185,14 @@
 
 #pragma mark - SCContactPerson lifecycle methods
 
-+ (SCContactPerson *)contactPersonWithID:(NSNumber *)personID
++ (SCContactPerson *)contactPersonWithID:(ABRecordID)personID
 {
-    return [[[SCContactPerson alloc] initWithContactPersonID:personID] autorelease];
+    return [[[SCContactPerson alloc] initWithABRecordID:personID] autorelease];
+}
+
+- (ABRecordRef)addressBook:(ABAddressBookRef)addressBook getABRecordWithID:(ABRecordID)recordID
+{
+    return ABAddressBookGetPersonWithRecordID(addressBook, recordID);
 }
 
 - (void)initializeMutableDictionaryPropertiesWithSize:(NSUInteger)size
@@ -143,71 +206,22 @@
     self.relatedNames   = [NSMutableDictionary dictionaryWithCapacity:size];
 }
 
-- (id)initWithContactPersonID:(NSNumber *)personID
+- (id)initWithABRecordID:(ABRecordID)recordID
 {
-    if (personID == nil)
-    {
-        return nil;
-    }
-    
-    self = [self init];
+    self = [super initWithABRecordID:recordID];
     
     if (self)
     {
-        ABAddressBookRef addressBook = ABAddressBookCreate();
-        ABRecordRef personRecord     = ABAddressBookGetPersonWithRecordID(addressBook, [personID intValue]);
-        
-        if (personRecord == NULL || ABRecordGetRecordType(personRecord) != kABPersonType)
-        {
-            CFRelease(addressBook);
-
-            [self release];
-            return nil;
-        }
-        
-        [self setABRecord:personRecord];
-        
-        NSError *loadError = nil;
-        
-        if ( ! [self loadRecord:self.ABRecord error:&loadError])
-        {
-            NSLog(@"Error loading person record: %@ from database, error: %@", self.ABRecord, loadError);
-
-            CFRelease(addressBook);
-
-            [self release];
-            return nil;
-        }
-        
-        CFRelease(addressBook);
-    }
-    
-    return self;
-}
-
-- (id)init
-{
-    self = [super init];
-    
-    if (self)
-    {
-        ABRecordRef personRecord = ABPersonCreate();
-        
-        if (personRecord == NULL || ABRecordGetRecordType(personRecord) != kABPersonType)
-        {
-            if (personRecord != NULL)
-            {
-                CFRelease(personRecord);
-            }
-            
-            return nil;
-        }
-
         [self initializeMutableDictionaryPropertiesWithSize:kSCContactDefaultDictionarySize];
-        
-        _ABRecord = personRecord;
-        
-        [self _resetState];
+     
+        if (self.ABRecordID > kABRecordInvalidID)
+        {
+            if ( ! [self readRecord:self.ABRecordID error:nil])
+            {
+                [self release];
+                return nil;
+            }
+        }
     }
     
     return self;
@@ -285,7 +299,7 @@
     return parentKeysToObserve;
 }
 
-#pragma mark - SCContactPerson property methods
+#pragma mark - SCContactPerson Decorator Methods
 
 - (void)setImageDataFromRecord:(ABRecordRef)record
 {
@@ -297,11 +311,108 @@
     self.image = [(NSData *)ABPersonCopyImageData(record) autorelease];
 }
 
-#pragma mark - SCContactRecordPersistence protocol methods
-
-- (BOOL)loadRecord:(ABRecordRef)record error:(NSError **)error
+- (ABMutableMultiValueRef)createMultiValueForProperty:(ABPropertyType)propertyType withDictionary:(NSDictionary *)dictionary
 {
-    BOOL result = YES;
+    ABMutableMultiValueRef multiValue = ABMultiValueCreateMutable(propertyType);
+    
+    int multiValueSize = [dictionary count];
+    
+    id objects[multiValueSize];
+    NSString *objectKeys[multiValueSize];
+    
+    [dictionary getObjects:objects
+                   andKeys:objectKeys];
+    
+    for (int i = 0; i < multiValueSize; i += 1)
+    {
+        ABMultiValueInsertValueAndLabelAtIndex(multiValue, objects[i], (CFStringRef)objectKeys[i], i, NULL);
+    }
+    
+    return multiValue;
+}
+
+- (BOOL)decorateABRecord:(ABRecordRef *)record fieldsToDecorate:(NSDictionary *)fieldsToDecorate error:(NSError **)error
+{
+    BOOL result = NO;
+    
+    NSDictionary *ABPropertyKeys = [self ABAddressBookKeyMap];
+    
+    for (NSString *fieldToDecorate in fieldsToDecorate)
+    {
+        ABPropertyID propertyID = [self ABPersonPropertyForKey:fieldToDecorate
+                                             addressBookKeyMap:ABPropertyKeys];
+        
+        NSDictionary *change    = [fieldsToDecorate valueForKey:fieldToDecorate];
+        id value                = [change valueForKey:NSKeyValueChangeNewKey];
+        ABPropertyType type     = ABPersonGetTypeOfProperty(propertyID);
+        
+        if (value == nil)
+        {
+            CFErrorRef removeValueError = NULL;
+            
+            if ( ! ABRecordRemoveValue(record, propertyID, &removeValueError))
+            {
+                if (error != NULL)
+                {
+                    *error = (NSError *)removeValueError;
+                }
+                
+                return result;
+            }
+        }
+        else
+        {
+            CFErrorRef setValueError = NULL;
+            
+            if (type & kABMultiValueMask)
+            {
+                ABMutableMultiValueRef multiValue = [self createMultiValueForProperty:type withDictionary:value];
+                
+                if ( ! ABRecordSetValue(record, propertyID, multiValue, &setValueError))
+                {
+                    if (error != NULL)
+                    {
+                        *error = (NSError *)setValueError;
+                    }
+                    
+                    return result;
+                }
+            }
+            else
+            {
+                if ( ! ABRecordSetValue(record, propertyID, value, &setValueError))
+                {
+                    if (error != NULL)
+                    {
+                        *error = (NSError *)setValueError;
+                    }
+                    
+                    return result;
+                }
+            }
+        }
+    }
+    
+    result = YES;
+    
+    return result;
+}
+
+- (BOOL)readFromRecordRef:(ABRecordRef *)recordRef error:(NSError **)error
+{
+    BOOL result = NO;
+
+    if (recordRef == NULL)
+    {
+        if (error != NULL)
+        {
+            *error = [NSError errorWithDomain:kSCContactRecord
+                                         code:kSCContactRecordReadError
+                                     userInfo:nil];
+        }
+        
+        return result;
+    }
     
     // Load personal properties
     ABPropertyID personalProperties[] = {
@@ -356,134 +467,136 @@
     
     [self setProperties:personalProperties
     withAccessorMethods:personalPropertiesAccessorMethods
-             fromRecord:record
+             fromRecord:recordRef
      numberOfProperties:personalPropertiesCount];
     
+    self.ABRecordID = ABRecordGetRecordID(recordRef);
+    
     // Load image data
-    [self setImageDataFromRecord:record];
+    [self setImageDataFromRecord:recordRef];
     
     // Load creation / modification dates
-    _creationDate     = (NSDate *)ABRecordCopyValue(record, kABPersonCreationDateProperty);
-    _modificationDate = (NSDate *)ABRecordCopyValue(record, kABPersonModificationDateProperty);
+    [self updateRecordModificationDates:recordRef];
     
     [self _resetState];
     
-    return result;    
-}
-
-- (BOOL)saveRecord:(ABRecordRef)record error:(NSError **)error
-{
-    BOOL result = NO;
+    result = YES;
     
-    if ( ! [self hasChanges])
-    {
-        result = YES;
-        return result;
-    }
-    
-    NSError *saveProcessingError = nil;
-    NSDictionary *changesToModel = [self changesRequiringPersistence];
-    NSDictionary *ABPropertyKeys = [self ABAddressBookKeyMap];
-    
-    for (NSString *changedPropertyKey in changesToModel)
-    {
-        ABPropertyID propertyID = [self ABPersonPropertyForKey:changedPropertyKey
-                                             addressBookKeyMap:ABPropertyKeys];
-        
-        SEL getterMethod = NSSelectorFromString(changedPropertyKey);
-        id value         = [self performSelector:getterMethod];
-        
-        ABPropertyType propertyType = ABPersonGetTypeOfProperty(propertyID);
-        CFErrorRef ABSaveError      = NULL;
-
-        if (value == nil)
-        {
-            ABRecordRemoveValue(record, propertyID, &ABSaveError);
-        }
-        else
-        {
-            // Transform value
-            if (propertyType & kABMultiValueMask)
-            {
-                // Handle multivalue property
-                ABMutableMultiValueRef multivalue = ABMultiValueCreateMutable(propertyType);
-                
-                int multiValueSize = [value count];
-                
-                id objects[multiValueSize];
-                NSString *objectKeys[multiValueSize];
-                
-                [(NSDictionary *)value getObjects:objects
-                                          andKeys:objectKeys];
-                
-                for (int i = 0; i < multiValueSize; i += 1)
-                {
-                    ABMultiValueInsertValueAndLabelAtIndex(multivalue, objects[i], (CFStringRef)objectKeys[i], i, NULL);
-                }
-                
-                if ( ! ABRecordSetValue(record, propertyID, multivalue, &ABSaveError))
-                {
-                    NSLog(@"Error setting value: %@ to key: %i", multivalue, propertyID);
-                    return result;
-                }
-                
-                CFRelease(multivalue);
-            }
-            else
-            {
-                
-                // Handle single value property
-                ABRecordSetValue(record, propertyID, value, &ABSaveError);
-            }
-        }
-        
-        if (ABSaveError != NULL)
-        {
-            saveProcessingError = (NSError *)ABSaveError;
-            break;
-        }
-    }
-
-    if (saveProcessingError == nil)
-    {
-        CFErrorRef saveError         = NULL;
-        ABAddressBookRef addressBook = ABAddressBookCreate();
-        
-        if (addressBook == NULL)
-        {
-            NSLog(@"Error creating addressbook: %@", addressBook);
-            
-            return result;
-        }
-        
-        if ( ! ABAddressBookAddRecord(addressBook, record, &saveError))
-        {
-            saveProcessingError = (NSError *)saveError;
-        }
-        else
-        {
-            if ( ! ABAddressBookSave(addressBook, &saveError))
-            {
-                saveProcessingError = (NSError *)saveError;
-            }
-            else
-            {
-                result = YES;
-            }
-        }        
-    }
-
-    if (saveProcessingError != nil && error != NULL)
-    {
-        *error = saveProcessingError;
-    }
-
     return result;
 }
 
-- (BOOL)deleteRecord:(ABRecordRef)record error:(NSError **)error
+#pragma mark - SCContactRecordPersistence protocol methods
+
+- (BOOL)createRecord:(ABRecordID)recordID error:(NSError **)error
 {
-    return [super deleteRecord:record error:error];
+    BOOL result                  = NO;
+    NSError *createError         = nil;
+    ABAddressBookRef addressBook = [SCContactAddressBook createAddressBookOptions:nil
+                                                                            error:&createError];
+
+    if (createError && error != NULL)
+    {
+        *error = createError;
+    }
+    
+    if ( ! addressBook || createError != nil)
+    {
+        return result;
+    }
+    else
+    {
+        ABRecordRef newPersonRecord  = ABPersonCreate();
+        CFErrorRef addError = NULL;
+
+        if ( ! ABAddressBookAddRecord(addressBook, newPersonRecord, &addError))
+        {
+            if (addError && error != NULL)
+            {
+                *error = (NSError *)addError;
+            }
+        }
+        else
+        {
+            result = [self persistRecord:newPersonRecord
+                             addressBook:addressBook
+                                   error:error];
+            
+            if (result)
+            {
+                self.ABRecordID = ABRecordGetRecordID(newPersonRecord);
+            }
+        }
+
+        CFRelease(newPersonRecord);
+    }
+    
+    CFRelease(addressBook);
+    
+    return result;
+}
+
+- (BOOL)readRecord:(ABRecordID)recordID error:(NSError **)error
+{
+    BOOL result                  = NO;
+    NSError *readError           = nil;
+    ABAddressBookRef addressBook = [SCContactAddressBook createAddressBookOptions:nil
+                                                                            error:&readError];
+    
+    if (readError && error != NULL)
+    {
+        *error = readError;
+    }
+    
+    if ( ! addressBook || readError != nil)
+    {
+        return result;
+    }
+    
+    ABRecordRef record = [self addressBook:addressBook getABRecordWithID:self.ABRecordID];
+
+    if (record == NULL)
+    {
+        if (error != NULL)
+        {
+            *error = [NSError errorWithDomain:kSCContactRecord
+                                         code:kSCContactRecordReadError
+                                     userInfo:nil];
+        }
+        
+        return result;
+    }
+    
+    return [self readFromRecordRef:&record error:error];
+}
+
+- (BOOL)updateRecord:(ABRecordID)recordID error:(NSError **)error
+{
+    BOOL result                  = NO;
+    NSError *updateError         = nil;
+    ABAddressBookRef addressBook = [SCContactAddressBook createAddressBookOptions:nil
+                                                                            error:&updateError];
+    
+    if (updateError && error != NULL)
+    {
+        *error = updateError;
+    }
+    
+    if ( ! addressBook || updateError != nil)
+    {
+        return result;
+    }
+    else
+    {
+        ABRecordRef record = [self addressBook:addressBook getABRecordWithID:self.ABRecordID];
+
+        result = [self persistRecord:record
+                         addressBook:addressBook
+                               error:error];
+    }
+
+    CFRelease(addressBook);
+    
+    return result;
 }
 
 @end

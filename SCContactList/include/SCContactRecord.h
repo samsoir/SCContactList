@@ -8,27 +8,47 @@
 
 #import <Foundation/Foundation.h>
 #import <AddressBook/AddressBook.h>
+#import "SCContactList.h"
 
 #ifndef kSCContactRecord
 #define kSCContactRecord @"SCContactRecord"
 
-#define kSCContactRecordDeleteError 10001
+#define kSCContactRecordReadError 10000
+
+#define kSCContactRecordDeleteError 10003
 #define kSCContactRecrodDeleteErrorKey @"errorMessage"
 
 #endif
 
-@interface SCContactRecord : NSObject {
-    ABRecordRef          _ABRecord;
+#ifndef __SCContactRecordPersistence__
+#define __SCContactRecordPersistence__
+
+@protocol SCContactRecordPersistence <NSObject>
+
+#pragma mark - SCContactRecordPersistence Methods
+
+- (BOOL)readFromRecordRef:(ABRecordRef *)recordRef error:(NSError **)error;
+- (ABRecordRef)addressBook:(ABAddressBookRef)addressBook getABRecordWithID:(ABRecordID)recordID;
+
+- (BOOL)createRecord:(ABRecordID)recordID error:(NSError **)error;
+- (BOOL)readRecord:(ABRecordID)recordID error:(NSError **)error;
+- (BOOL)updateRecord:(ABRecordID)recordID error:(NSError **)error;
+- (BOOL)deleteRecord:(ABRecordID)recordID error:(NSError **)error;
+
+@end
+
+#endif
+
+@interface SCContactRecord : NSObject <SCContactRecordPersistence> {
+    ABRecordID           _ABRecordID;
     NSMutableDictionary *_changesToModel;
 }
 
-@property (nonatomic, readonly) ABRecordRef ABRecord;
+@property (nonatomic, assign) ABRecordID ABRecordID;
+
+- (id)initWithABRecordID:(ABRecordID)recordID;
 
 #pragma mark - Record Properties
-
-- (void)setABRecord:(ABRecordRef)record;
-
-- (NSNumber *)recordID;
 
 - (BOOL)recordExistsInDatabase;
 
@@ -55,16 +75,7 @@
 
 #pragma mark - SCContactRecordPersistence Methods
 
-- (BOOL)deleteRecord:(ABRecordRef)record error:(NSError **)error;
-
-@end
-
-@protocol SCContactRecordPersistence <NSObject>
-
-#pragma mark - SCContactRecordPersistence Methods
-
-- (BOOL)loadRecord:(ABRecordRef)record error:(NSError **)error;
-- (BOOL)saveRecord:(ABRecordRef)record error:(NSError **)error;
-- (BOOL)deleteRecord:(ABRecordRef)record error:(NSError **)error;
+- (ABRecordRef)addressBook:(ABAddressBookRef)addressBook getABRecordWithID:(ABRecordID)recordID;
+- (BOOL)deleteRecord:(ABRecordID)recordID error:(NSError **)error;
 
 @end

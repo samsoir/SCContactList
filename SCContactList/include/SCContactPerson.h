@@ -7,7 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "SCContactRecord.h"
+#import "SCContactList.h"
 
 #ifndef kSCContactDefaults
 #define kSCContactDefaults
@@ -17,7 +17,6 @@
 #define kSCContactEmailHome kABHomeLabel
 #define kSCContactEmailWork kABWorkLabel
 #endif
-
 
 @interface SCContactPerson : SCContactRecord <SCContactRecordPersistence> {
     
@@ -87,15 +86,24 @@
 @property (nonatomic, readonly) NSDate            *creationDate;
 @property (nonatomic, readonly) NSDate            *modificationDate;
 
-#pragma mark - SCContactPerson lifecycle methods
+#pragma mark - SCContactPerson lifecycle Methods
 
-+ (SCContactPerson *)contactPersonWithID:(NSNumber *)personID;
++ (SCContactPerson *)contactPersonWithID:(ABRecordID)personID;
 
-- (id)initWithContactPersonID:(NSNumber *)personID;
+- (id)initWithABRecordID:(ABRecordID)recordID;
 
-#pragma mark - SCContactPerson property methods
+#pragma mark - SCContactPerson Decorator Methods
 
 - (void)setImageDataFromRecord:(ABRecordRef)record;
 
+- (ABMutableMultiValueRef)createMultiValueForProperty:(ABPropertyType)propertyType withDictionary:(NSDictionary *)dictionary;
+- (BOOL)decorateABRecord:(ABRecordRef *)record fieldsToDecorate:(NSDictionary *)fieldsToDecorate error:(NSError **)error;
+
+#pragma mark - SCContactPerson Persistent Methods
+
+- (BOOL)readFromRecordRef:(ABRecordRef *)recordRef error:(NSError **)error;
+- (BOOL)createRecord:(ABRecordID)recordID error:(NSError **)error;
+- (BOOL)readRecord:(ABRecordID)recordID error:(NSError **)error;
+- (BOOL)updateRecord:(ABRecordID)recordID error:(NSError **)error;
 
 @end

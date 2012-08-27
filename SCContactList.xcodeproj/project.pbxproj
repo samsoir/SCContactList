@@ -21,7 +21,7 @@
 		7BD9CC7315B76A7900D6DAA8 /* AddressBook.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7BD9CC7115B7103500D6DAA8 /* AddressBook.framework */; };
 		7BD9CC7515B76AB700D6DAA8 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7BD9CC7415B76AB700D6DAA8 /* UIKit.framework */; };
 		7BD9CC7615B76AC800D6DAA8 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7BD9CC7415B76AB700D6DAA8 /* UIKit.framework */; };
-		7BD9CC7D15B869C900D6DAA8 /* SCContactList.m in Sources */ = {isa = PBXBuildFile; fileRef = 7BD9CC7C15B869C900D6DAA8 /* SCContactList.m */; };
+		7BD9CC7D15B869C900D6DAA8 /* SCContactAddressBook.m in Sources */ = {isa = PBXBuildFile; fileRef = 7BD9CC7C15B869C900D6DAA8 /* SCContactAddressBook.m */; };
 		7BD9CC8115B86A0000D6DAA8 /* SCContactListTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 7BD9CC8015B86A0000D6DAA8 /* SCContactListTests.m */; };
 		7BD9CC8915B871AA00D6DAA8 /* SCContactGroup.m in Sources */ = {isa = PBXBuildFile; fileRef = 7BD9CC8815B871AA00D6DAA8 /* SCContactGroup.m */; };
 		7BD9CC8C15B8720100D6DAA8 /* SCContactGroup.m in Sources */ = {isa = PBXBuildFile; fileRef = 7BD9CC8815B871AA00D6DAA8 /* SCContactGroup.m */; };
@@ -51,12 +51,16 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		7B7A921315E81B4600ED4325 /* SCContactList.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCContactList.h; sourceTree = "<group>"; };
+		7B7A921415E81B4600ED4325 /* SCContactGroup.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCContactGroup.h; sourceTree = "<group>"; };
+		7B7A921615E81B4600ED4325 /* SCContactPerson.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCContactPerson.h; sourceTree = "<group>"; };
+		7B7A921715E81B4600ED4325 /* SCContactRecord.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCContactRecord.h; sourceTree = "<group>"; };
+		7B7A921815E81C0800ED4325 /* SCContactAddressBook.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCContactAddressBook.h; sourceTree = "<group>"; };
+		7B7A923015E81CB900ED4325 /* SCContactListTests copy-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "SCContactListTests copy-Info.plist"; path = "/Users/sdefreyssinet/Projects/SCContactList/SCContactListTests copy-Info.plist"; sourceTree = "<absolute>"; };
 		7BBAEF2515BDAAEE005CEAEF /* SCContactPerson.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCContactPerson.m; sourceTree = "<group>"; };
 		7BBAEF2915BDAB16005CEAEF /* SCContactPersonTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCContactPersonTests.m; sourceTree = "<group>"; };
 		7BBAEF2B15BDAB34005CEAEF /* SCContactPersonTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCContactPersonTests.h; sourceTree = "<group>"; };
-		7BBAEF2C15BDAB47005CEAEF /* SCContactPerson.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCContactPerson.h; sourceTree = "<group>"; };
 		7BBAEF2F15BDACFC005CEAEF /* SCContactRecord.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCContactRecord.m; sourceTree = "<group>"; };
-		7BBAEF3215BDAD1A005CEAEF /* SCContactRecord.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCContactRecord.h; sourceTree = "<group>"; };
 		7BD9CC4615B7101B00D6DAA8 /* libSCContactList.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libSCContactList.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		7BD9CC4915B7101B00D6DAA8 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		7BD9CC4D15B7101B00D6DAA8 /* SCContactList-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "SCContactList-Prefix.pch"; sourceTree = "<group>"; };
@@ -66,12 +70,10 @@
 		7BD9CC6415B7101B00D6DAA8 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		7BD9CC7115B7103500D6DAA8 /* AddressBook.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AddressBook.framework; path = System/Library/Frameworks/AddressBook.framework; sourceTree = SDKROOT; };
 		7BD9CC7415B76AB700D6DAA8 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
-		7BD9CC7B15B869C200D6DAA8 /* SCContactList.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCContactList.h; sourceTree = "<group>"; };
-		7BD9CC7C15B869C900D6DAA8 /* SCContactList.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCContactList.m; sourceTree = "<group>"; };
+		7BD9CC7C15B869C900D6DAA8 /* SCContactAddressBook.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCContactAddressBook.m; sourceTree = "<group>"; };
 		7BD9CC7F15B869F900D6DAA8 /* SCContactListTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCContactListTests.h; sourceTree = "<group>"; };
 		7BD9CC8015B86A0000D6DAA8 /* SCContactListTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCContactListTests.m; sourceTree = "<group>"; };
 		7BD9CC8815B871AA00D6DAA8 /* SCContactGroup.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCContactGroup.m; sourceTree = "<group>"; };
-		7BD9CC8A15B871B500D6DAA8 /* SCContactGroup.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCContactGroup.h; sourceTree = "<group>"; };
 		7BD9CC8E15B89AB900D6DAA8 /* SCContactGroupTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCContactGroupTests.m; sourceTree = "<group>"; };
 		7BD9CC9015B89ADB00D6DAA8 /* SCContactGroupTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCContactGroupTests.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -109,6 +111,7 @@
 				7BD9CC6015B7101B00D6DAA8 /* SCContactListTests */,
 				7BD9CC4815B7101B00D6DAA8 /* Frameworks */,
 				7BD9CC4715B7101B00D6DAA8 /* Products */,
+				7B7A923015E81CB900ED4325 /* SCContactListTests copy-Info.plist */,
 			);
 			sourceTree = "<group>";
 			usesTabs = 0;
@@ -193,10 +196,11 @@
 		7BD9CC7915B8699000D6DAA8 /* include */ = {
 			isa = PBXGroup;
 			children = (
-				7BBAEF3215BDAD1A005CEAEF /* SCContactRecord.h */,
-				7BBAEF2C15BDAB47005CEAEF /* SCContactPerson.h */,
-				7BD9CC8A15B871B500D6DAA8 /* SCContactGroup.h */,
-				7BD9CC7B15B869C200D6DAA8 /* SCContactList.h */,
+				7B7A921815E81C0800ED4325 /* SCContactAddressBook.h */,
+				7B7A921315E81B4600ED4325 /* SCContactList.h */,
+				7B7A921415E81B4600ED4325 /* SCContactGroup.h */,
+				7B7A921615E81B4600ED4325 /* SCContactPerson.h */,
+				7B7A921715E81B4600ED4325 /* SCContactRecord.h */,
 			);
 			path = include;
 			sourceTree = "<group>";
@@ -205,7 +209,7 @@
 			isa = PBXGroup;
 			children = (
 				7BD9CC8815B871AA00D6DAA8 /* SCContactGroup.m */,
-				7BD9CC7C15B869C900D6DAA8 /* SCContactList.m */,
+				7BD9CC7C15B869C900D6DAA8 /* SCContactAddressBook.m */,
 				7BBAEF2515BDAAEE005CEAEF /* SCContactPerson.m */,
 				7BBAEF2F15BDACFC005CEAEF /* SCContactRecord.m */,
 			);
@@ -310,7 +314,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				7BD9CC7D15B869C900D6DAA8 /* SCContactList.m in Sources */,
+				7BD9CC7D15B869C900D6DAA8 /* SCContactAddressBook.m in Sources */,
 				7BD9CC8915B871AA00D6DAA8 /* SCContactGroup.m in Sources */,
 				7BBAEF2615BDAAEE005CEAEF /* SCContactPerson.m in Sources */,
 				7BBAEF3015BDACFC005CEAEF /* SCContactRecord.m in Sources */,
@@ -429,7 +433,7 @@
 				GCC_PREFIX_HEADER = "SCContactList/SCContactList-Prefix.pch";
 				INFOPLIST_FILE = "SCContactListTests/SCContactListTests-Info.plist";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				USER_HEADER_SEARCH_PATHS = "${SRCROOT}/SCContactListTests/include/**";
+				USER_HEADER_SEARCH_PATHS = "${SRCROOT}/SCContactListTests/include/** ${SRCROOT}/SCContactList/include/**";
 				WRAPPER_EXTENSION = octest;
 			};
 			name = Debug;
@@ -445,7 +449,7 @@
 				GCC_PREFIX_HEADER = "SCContactList/SCContactList-Prefix.pch";
 				INFOPLIST_FILE = "SCContactListTests/SCContactListTests-Info.plist";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				USER_HEADER_SEARCH_PATHS = "${SRCROOT}/SCContactListTests/include/**";
+				USER_HEADER_SEARCH_PATHS = "${SRCROOT}/SCContactListTests/include/** ${SRCROOT}/SCContactList/include/**";
 				WRAPPER_EXTENSION = octest;
 			};
 			name = Release;

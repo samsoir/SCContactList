@@ -6,14 +6,14 @@
 //  Copyright (c) 2012 Sittercity, Inc. All rights reserved.
 //
 
-#import "SCContactGroup.h"
+#import "SCContactList.h"
 
 @implementation SCContactGroup(Private)
 
-+ (NSNumber *)findGroupIDByName:(NSString *)groupName
++ (ABRecordID)findGroupIDByName:(NSString *)groupName
                         inArray:(CFArrayRef)array
 {
-    NSNumber *groupID = nil;
+    ABRecordID groupID = kABRecordInvalidID;
     int groupCount    = CFArrayGetCount(array);
     
     if (groupCount > 0)
@@ -21,16 +21,14 @@
         for (int i = 0; i < groupCount; i += 1)
         {
             ABRecordRef group         = CFArrayGetValueAtIndex(array, i);
-            NSString *groupRecordName = ABRecordCopyValue(group, kABGroupNameProperty);
+            NSString *groupRecordName = [(NSString *)ABRecordCopyValue(group, kABGroupNameProperty) autorelease];
             
             if ([groupName isEqualToString:groupRecordName])
             {
-                groupID = [NSNumber numberWithInt:ABRecordGetRecordID(group)];
-            }
+                groupID = ABRecordGetRecordID(group);
+            }            
             
-            CFRelease(groupRecordName);
-            
-            if (groupID != nil)
+            if (groupID > kABRecordInvalidID)
             {
                 break;
             }
@@ -40,11 +38,31 @@
     return groupID;
 }
 
+- (BOOL)persistRecord:(ABRecordRef)record addressBook:(ABAddressBookRef)addressBook error:(NSError **)error
+{
+    BOOL result                 = NO;
+    CFErrorRef addressBookError = NULL;
+    
+    if (ABRecordSetValue(record, kABGroupNameProperty, self.groupName, &addressBookError))
+    {
+        if (ABAddressBookSave(addressBook, &addressBookError))
+        {
+            result = NO;
+        }
+    }
+    
+    if (error != NULL && ! result)
+    {
+        *error = [(NSError *)addressBookError autorelease];
+    }
+    
+    return result;
+}
+
 @end
 
 @implementation SCContactGroup
 
-@synthesize groupID     = _groupID;
 @synthesize groupName   = _groupName;
 @synthesize contacts    = _contacts;
 
@@ -64,10 +82,10 @@
     
     ABAddressBookRef addressBook = ABAddressBookCreate();
     CFArrayRef groups            = ABAddressBookCopyArrayOfAllGroups(addressBook);
-    NSNumber *groupID            = [self findGroupIDByName:groupName
+    ABRecordID groupID           = [self findGroupIDByName:groupName
                                                    inArray:groups];
     
-    if (groupID != nil)
+    if (groupID > kABRecordInvalidID)
     {
         contactGroup = [self contactGroupWithID:groupID];
     }
@@ -78,130 +96,38 @@
     return contactGroup;
 }
 
-+ (SCContactGroup *)contactGroupWithID:(NSNumber *)groupID
++ (SCContactGroup *)contactGroupWithID:(ABRecordID)groupID
 {
-    return [[[SCContactGroup alloc] initWithGroupID:groupID] autorelease];
+    return [[[SCContactGroup alloc] initWithABRecordID:groupID] autorelease];
 }
 
-- (id)initWithGroupID:(NSNumber *)groupID
+- (id)initWithABRecordID:(ABRecordID)recordID
 {
-    if (groupID == nil)
+    self = [super initWithABRecordID:recordID];
+        
+    if (self && recordID > kABRecordInvalidID)
     {
-        return nil;
-    }
-    
-    self = [self init];
-
-        
-    if (self)
-    {
-        ABAddressBookRef addressBook = ABAddressBookCreate();
-        ABRecordID addressBookID     = [groupID intValue];
-        
-        ABRecordRef group = ABAddressBookGetGroupWithRecordID(addressBook, addressBookID);
-        
-        if (group == NULL || ABRecordGetRecordType(group) != kABGroupType)
+        if ( ! [self readRecord:recordID error:nil])
         {
-            CFRelease(addressBook);
+            [self release];
             return nil;
         }
-                
-        self.groupID   = groupID;
-        self.groupName = [(NSString *)ABRecordCopyValue(group, kABGroupNameProperty) autorelease];
-
-        [self setABRecord:group];
-        
-        CFRelease(addressBook);
-        
-        [self _resetState];
     }
-    
+
     return self;
 }
 
 - (id)init
 {
-    self = [super init];
-
-    if (self)
-    {
-        ABRecordRef groupRecord = ABGroupCreate();
-        _contacts               = [[NSMutableSet alloc] initWithCapacity:10];
-        
-        [self setABRecord:groupRecord];
-        
-        CFRelease(groupRecord);
-    }
-
-    return self;
+    return [self initWithABRecordID:kABRecordInvalidID];
 }
 
 - (void)dealloc
 {
-    [_groupID release];
     [_groupName release];
     [_contacts release];
     
     [super dealloc];
-}
-
-#pragma mark - SCContactGroup methods
-
-- (BOOL)save:(NSError **)error
-{
-    BOOL result                  = NO;
-    ABAddressBookRef addressBook = ABAddressBookCreate();
-    CFErrorRef setNameError      = NULL;
-    
-    if ( ! ABRecordSetValue(self.ABRecord, kABGroupNameProperty, self.groupName, &setNameError))
-    {
-        if (error != NULL)
-        {
-            *error = (NSError *)setNameError;
-
-            CFRelease(addressBook);
-            
-            return result;
-        }
-    }
-    
-    CFErrorRef addGroupError = NULL;
-    
-    if ( ! ABAddressBookAddRecord(addressBook, self.ABRecord, &addGroupError))
-    {
-        if (error != NULL)
-        {
-            *error = (NSError *)addGroupError;
-        }
-    }
-    else
-    {
-        CFErrorRef saveError = NULL;
-        
-        if ( ! ABAddressBookSave(addressBook, &saveError))
-        {
-            if (error != NULL)
-            {
-                *error = (NSError *)saveError;
-            }
-        }
-        else
-        {
-            result       = YES;
-            self.groupID = [NSNumber numberWithInt:ABRecordGetRecordID(self.ABRecord)];
-        }
-    }
-    
-    CFRelease(addressBook);
-    
-    [self _resetState];
-
-    return result;
-}
-
-- (BOOL)remove:(NSError **)error
-{
-    return [self deleteRecord:self.ABRecord error:error];
 }
 
 #pragma mark - Key/Value Observing Methods
@@ -242,10 +168,10 @@
 
 #pragma mark - SCContactRecordPersistence Methods
 
-- (BOOL)loadRecord:(ABRecordRef)record error:(NSError **)error
+- (BOOL)readFromRecordRef:(ABRecordRef *)recordRef error:(NSError **)error
 {
-    BOOL result = YES;
-    
+    BOOL result = NO;    
+
     ABPropertyID groupProperties[] = {
         kABGroupNameProperty
     };
@@ -258,76 +184,147 @@
     
     [self setProperties:groupProperties
     withAccessorMethods:groupPropertiesAccessorMethods
-             fromRecord:record
+             fromRecord:recordRef
      numberOfProperties:groupPropertiesCount];
     
-    [self _resetState];
+    self.ABRecordID = ABRecordGetRecordID(recordRef);
     
+    result = YES;
+    
+    [self _resetState];
+        
     return result;
 }
 
-- (BOOL)saveRecord:(ABRecordRef)record error:(NSError **)error
+- (ABRecordRef)addressBook:(ABAddressBookRef)addressBook getABRecordWithID:(ABRecordID)recordID
 {
-    BOOL result = NO;
+    return ABAddressBookGetGroupWithRecordID(addressBook, recordID);
+}
+
+- (BOOL)createRecord:(ABRecordID)recordID error:(NSError **)error
+{
+    BOOL result                  = NO;
+    NSError *createError         = nil;
+    ABAddressBookRef addressBook = [SCContactAddressBook createAddressBookOptions:nil
+                                                                            error:&createError];
     
-    if ( ! [self hasChanges])
+    if (createError && error != NULL)
     {
-        result = YES;
+        *error = createError;
+    }
+    
+    if ( ! addressBook || createError != nil)
+    {
         return result;
-    }
-    
-    ABAddressBookRef addressBook = ABAddressBookCreate();
-    CFErrorRef setNameError      = NULL;
-    
-    if ( ! ABRecordSetValue(record, kABGroupNameProperty, self.groupName, &setNameError))
-    {
-        if (error != NULL)
-        {
-            *error = (NSError *)setNameError;
-            
-            CFRelease(addressBook);
-            
-            return result;
-        }
-    }
-    
-    CFErrorRef addGroupError = NULL;
-    
-    if ( ! ABAddressBookAddRecord(addressBook, self.ABRecord, &addGroupError))
-    {
-        if (error != NULL)
-        {
-            *error = (NSError *)addGroupError;
-        }
     }
     else
     {
-        CFErrorRef saveError = NULL;
+        ABRecordRef newGroupRecord = ABGroupCreate();
+        CFErrorRef addError        = NULL;
         
-        if ( ! ABAddressBookSave(addressBook, &saveError))
+        if ( ! ABAddressBookAddRecord(addressBook, newGroupRecord, &addError))
         {
-            if (error != NULL)
+            if (addError && error != NULL)
             {
-                *error = (NSError *)saveError;
+                *error = (NSError *)addError;
             }
         }
         else
         {
-            result       = YES;
-            self.groupID = [NSNumber numberWithInt:ABRecordGetRecordID(self.ABRecord)];
+            result = [self persistRecord:newGroupRecord
+                             addressBook:addressBook
+                                   error:error];
+            
+            if (result)
+            {
+                self.ABRecordID = ABRecordGetRecordID(newGroupRecord);
+            }
         }
+        
+        CFRelease(newGroupRecord);
     }
     
     CFRelease(addressBook);
     
-    [self _resetState];
+    return result;
+}
+
+- (BOOL)readRecord:(ABRecordID)recordID error:(NSError **)error
+{
+    BOOL result = NO;
+    
+    NSError *readError = nil;
+    
+    ABAddressBookRef addressBook = [SCContactAddressBook createAddressBookOptions:nil error:&readError];
+    
+    if ( ! addressBook && error != NULL)
+    {
+        *error = readError;
+    }
+    
+    if ( ! addressBook)
+    {
+        return result;
+    }
+    
+    ABRecordRef record = [self addressBook:addressBook getABRecordWithID:recordID];
+    
+    if ( ! record)
+    {
+        if (error != NULL)
+        {
+            NSDictionary *eDict = [NSDictionary dictionaryWithObject:[NSString stringWithFormat:@"Updable to load SCContactGroup from recordID: %i", recordID]
+                                                              forKey:@"message"];
+            *error = [NSError errorWithDomain:kSCContactRecord
+                                         code:kSCContactRecordReadError
+                                     userInfo:eDict];
+        }
+        
+        self.ABRecordID = kABRecordInvalidID;
+    }
+    else
+    {
+        result = [self readFromRecordRef:&record error:error];
+    }
+    
+    CFRelease(addressBook);
     
     return result;
 }
 
-- (BOOL)deleteRecord:(ABRecordRef)record error:(NSError **)error
+- (BOOL)updateRecord:(ABRecordID)recordID error:(NSError **)error
 {
-    return [super deleteRecord:record error:error];
+    BOOL result                  = NO;
+    NSError *updateError         = nil;
+    ABAddressBookRef addressBook = [SCContactAddressBook createAddressBookOptions:nil
+                                                                            error:&updateError];
+    
+    if (updateError && error != NULL)
+    {
+        *error = updateError;
+    }
+    
+    if ( ! addressBook || updateError != nil)
+    {
+        return result;
+    }
+    else
+    {
+        ABRecordRef record = [self addressBook:addressBook getABRecordWithID:self.ABRecordID];
+        
+        result = [self persistRecord:record
+                         addressBook:addressBook
+                               error:error];
+    }
+    
+    CFRelease(addressBook);
+    
+    return result;
+}
+
+- (BOOL)deleteRecord:(ABRecordID)recordID error:(NSError **)error
+{
+    return [super deleteRecord:recordID error:error];
 }
 
 @end

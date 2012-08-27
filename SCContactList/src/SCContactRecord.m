@@ -6,13 +6,25 @@
 //  Copyright (c) 2012 Sittercity, Inc. All rights reserved.
 //
 
-#import "SCContactRecord.h"
+#import "SCContactList.h"
 
 @implementation SCContactRecord
 
-@synthesize ABRecord = _ABRecord;
+@synthesize ABRecordID = _ABRecordID;
 
 #pragma mark - SCContactRecord lifecycle methods
+
+- (id)initWithABRecordID:(ABRecordID)recordID
+{
+    self = [self init];
+    
+    if (self)
+    {
+        self.ABRecordID = recordID;
+    }
+    
+    return self;
+}
 
 - (id)init
 {
@@ -20,10 +32,12 @@
     
     if (self)
     {
+        self.ABRecordID = kABRecordInvalidID;
+        
         [self initializeKeyValueObserving:[self objectKeysToObserve]
                                   options:NSKeyValueObservingOptionNew|NSKeyValueObservingOptionOld];
         
-        [self _resetState];        
+        [self _resetState];
     }
     
     return self;
@@ -32,12 +46,7 @@
 - (void)dealloc
 {
     [_changesToModel release];
-    
-    if (_ABRecord != NULL)
-    {
-        CFRelease(_ABRecord);
-    }
-    
+        
     [self deinitializeKeyValueObserving:[self objectKeysToObserve]];
     
     [super dealloc];
@@ -45,47 +54,9 @@
 
 #pragma mark - SCContactRecord state methods
 
-- (void)setABRecord:(ABRecordRef)record
-{
-    if (_ABRecord != record)
-    {
-        if (_ABRecord != NULL)
-        {
-            CFRelease(_ABRecord);
-        }
-        
-        CFRetain(record);
-        _ABRecord = record;
-    }
-}
-
-- (NSNumber *)recordID
-{
-    NSNumber *recordID = nil;
-    
-    if (_ABRecord != NULL)
-    {
-        ABRecordID abRecordID = ABRecordGetRecordID(_ABRecord);
-        
-        if (abRecordID != kABRecordInvalidID)
-        {
-            recordID = [NSNumber numberWithInt:ABRecordGetRecordID(_ABRecord)];
-        }
-    }
-    
-    return recordID;
-}
-
 - (BOOL)recordExistsInDatabase
 {
-    BOOL result = NO;
-
-    if (self.ABRecord)
-    {
-        result = (ABRecordGetRecordID(self.ABRecord) != kABRecordInvalidID);
-    }
-
-    return result;
+    return (self.ABRecordID > kABRecordInvalidID);
 }
 
 - (NSDictionary *)changesRequiringPersistence
@@ -225,58 +196,86 @@
 
 #pragma mark - SCContactRecordPersistence Methods
 
-- (BOOL)deleteRecord:(ABRecordRef)record error:(NSError **)error
+- (BOOL)readFromRecordRef:(ABRecordRef *)recordRef error:(NSError **)error
+{
+    @throw [NSException exceptionWithName:NSInternalInconsistencyException
+                                   reason:[NSString stringWithFormat:@"%@ must be used from instances of SCContactPerson or SCContactGroup", NSStringFromSelector(_cmd)]
+                                 userInfo:nil];
+}
+
+- (ABRecordRef)addressBook:(ABAddressBookRef)addressBook getABRecordWithID:(ABRecordID)recordID
+{
+    @throw [NSException exceptionWithName:NSInternalInconsistencyException
+                                   reason:[NSString stringWithFormat:@"%@ must be used from instances of SCContactPerson or SCContactGroup", NSStringFromSelector(_cmd)]
+                                 userInfo:nil];
+}
+
+- (BOOL)createRecord:(ABRecordID)recordID error:(NSError **)error
+{
+    @throw [NSException exceptionWithName:NSInternalInconsistencyException
+                                   reason:[NSString stringWithFormat:@"%@ must be used from instances of SCContactPerson or SCContactGroup", NSStringFromSelector(_cmd)]
+                                 userInfo:nil];
+}
+
+- (BOOL)readRecord:(ABRecordID)recordID error:(NSError **)error
+{
+    @throw [NSException exceptionWithName:NSInternalInconsistencyException
+                                   reason:[NSString stringWithFormat:@"%@ must be used from instances of SCContactPerson or SCContactGroup", NSStringFromSelector(_cmd)]
+                                 userInfo:nil];
+}
+
+- (BOOL)updateRecord:(ABRecordID)recordID error:(NSError **)error
+{
+    @throw [NSException exceptionWithName:NSInternalInconsistencyException
+                                   reason:[NSString stringWithFormat:@"%@ must be used from instances of SCContactPerson or SCContactGroup", NSStringFromSelector(_cmd)]
+                                 userInfo:nil];   
+}
+
+
+- (BOOL)deleteRecord:(ABRecordID)recordID error:(NSError **)error
 {
     BOOL result = NO;
     
-    if ([self recordID] == nil)
+    if (recordID == kABRecordInvalidID)
+    {
+        return YES;
+    }
+    
+    ABAddressBookRef addressBook = [SCContactAddressBook createAddressBookOptions:nil error:nil];
+    ABRecordRef record           = [self addressBook:addressBook getABRecordWithID:recordID];
+    
+    if (record == NULL)
     {
         if (error != NULL)
         {
-            NSDictionary *errorDict = [NSDictionary dictionaryWithObjectsAndKeys:@"This record does not exist in the Address Book database", kSCContactRecrodDeleteErrorKey, nil];
+            NSDictionary *eDict = [NSDictionary dictionaryWithObject:[NSString stringWithFormat:@"Unable to load record %i for deletion", recordID]
+                                                              forKey:@"message"];
+            
             *error = [NSError errorWithDomain:kSCContactRecord
                                          code:kSCContactRecordDeleteError
-                                     userInfo:errorDict];            
+                                     userInfo:eDict];
         }
+    }
+    else
+    {
+        CFErrorRef deleteError = NULL;
         
-        return result;
-    }
-    
-    ABAddressBookRef addressBook = ABAddressBookCreate();
-    
-    CFErrorRef deleteError = NULL;
-    
-    if ( ! ABAddressBookRemoveRecord(addressBook, self.ABRecord, &deleteError))
-    {
-        if (error != NULL)
+        if ( ! ABAddressBookRemoveRecord(addressBook, record, &deleteError))
         {
-            *error = (NSError *)deleteError;
+            if (error != NULL)
+            {
+                *error = [(NSError *)deleteError autorelease];
+            }
         }
-        
-        return result;
-    }
-    
-    CFErrorRef saveError = NULL;
-
-    if ( ! ABAddressBookSave(addressBook, &saveError))
-    {
-        if (error != NULL)
+        else
         {
-            *error = (NSError *)saveError;
+            result = YES;
+            self.ABRecordID = kABRecordInvalidID;
         }
-
-        return result;
-    }
-    
-    if (_ABRecord != NULL)
-    {
-        CFRelease(_ABRecord);
-        _ABRecord = NULL;
     }
     
     CFRelease(addressBook);
     
-    result = YES;
     return result;
 }
 

@@ -7,8 +7,7 @@
 //
 
 #import "SCContactPersonTests.h"
-#import "SCContactRecord.h"
-#import "SCContactPerson.h"
+#import "SCContactList.h"
 
 @implementation SCContactPersonTests
 

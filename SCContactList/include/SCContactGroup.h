@@ -8,16 +8,15 @@
 
 #import <Foundation/Foundation.h>
 #import <AddressBook/AddressBook.h>
-#import "SCContactRecord.h"
+#import "SCContactList.h"
 
 @interface SCContactGroup : SCContactRecord <SCContactRecordPersistence> {
-    NSNumber     *_groupID;
+
     NSString     *_groupName;
     
     NSMutableSet *_contacts;
 }
 
-@property (nonatomic, retain) NSNumber      *groupID;
 @property (nonatomic, retain) NSString      *groupName;
 @property (nonatomic, readonly) NSSet       *contacts;
 
@@ -27,24 +26,18 @@
 
 + (SCContactGroup *)contactGroupWithName:(NSString *)groupName;
 
-+ (SCContactGroup *)contactGroupWithID:(NSNumber *)groupID;
++ (SCContactGroup *)contactGroupWithID:(ABRecordID)groupID;
 
-- (id)initWithGroupID:(NSNumber *)groupID;
+- (id)initWithABRecordID:(ABRecordID)recordID;
 
-#pragma mark - SCContactGroup methods
+#pragma mark - SCContactRecordPersistence Methods
 
-- (BOOL)save:(NSError **)error;
-
-- (BOOL)remove:(NSError **)error;
-
-#pragma mark - SCContactRecord methods
+- (BOOL)readFromRecordRef:(ABRecordRef *)recordRef error:(NSError **)error;
+- (ABRecordRef)addressBook:(ABAddressBookRef)addressBook getABRecordWithID:(ABRecordID)recordID;
 
 - (void)addContactRecord:(id)record;
-
 - (void)removeContact:(id)record;
-
 - (void)addContactRecords:(NSSet *)records;
-
 - (void)removeContactRecords:(NSSet *)records;
 
 @end
