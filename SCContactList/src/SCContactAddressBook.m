@@ -23,31 +23,6 @@
 }
 
 
-+ (ABAddressBookRef)createAddressBookOptions:(NSDictionary *)options error:(NSError **)error
-{
-    ABAddressBookRef addressBook = NULL;
-
-    if (ABAddressBookCreateWithOptions != NULL)
-    {
-        // SDK 6.0 is available
-        CFErrorRef createAddressBookError = NULL;
-        CFDictionaryRef optionsCDict      = (CFDictionaryRef)options;
-        
-        addressBook = ABAddressBookCreateWithOptions(optionsCDict, &createAddressBookError);
-        
-        if (createAddressBookError != NULL && error != NULL)
-        {
-            *error = [(NSError *)createAddressBookError autorelease];
-        }
-    }
-    else
-    {
-        addressBook = ABAddressBookCreate();        
-    }
-    
-    return addressBook;
-}
-
 - (id)init
 {
     self = [super init];
@@ -65,7 +40,7 @@
 - (BOOL)addressBookHasChanges
 {
     BOOL result = NO;
-    ABAddressBookRef addressBook = [SCContactAddressBook createAddressBookOptions:nil error:nil];
+    ABAddressBookRef addressBook = ABAddressBookCreate();
 
     result = ABAddressBookHasUnsavedChanges(addressBook);
     
@@ -76,7 +51,7 @@
 
 - (NSArray *)getAllContacts
 {
-    ABAddressBookRef addressBook  = [SCContactAddressBook createAddressBookOptions:nil error:nil];
+    ABAddressBookRef addressBook  = ABAddressBookCreate();
 
     NSArray *ABRecordArray        = [(NSArray *)ABAddressBookCopyArrayOfAllPeople(addressBook) autorelease];
     int contactCount              = [ABRecordArray count];
@@ -88,9 +63,9 @@
         ABRecordRef record      = [ABRecordArray objectAtIndex:i];
         SCContactPerson *person = [[[SCContactPerson alloc] init] autorelease];
 
-        if ([person readFromRecordRef:&record error:nil])
+        if ([person readFromRecordRef:record error:nil])
         {
-            [contactsArray addObject:[person autorelease]];
+            [contactsArray addObject:person];
         }
     }
     
@@ -101,7 +76,7 @@
 
 - (NSArray *)getAllGroups
 {
-    ABAddressBookRef addressBook = [SCContactAddressBook createAddressBookOptions:nil error:nil];
+    ABAddressBookRef addressBook = ABAddressBookCreate();
     
     NSArray *ABRecordArray       = [(NSArray *)ABAddressBookCopyArrayOfAllGroups(addressBook) autorelease];
     int groupCount               = [ABRecordArray count];
@@ -111,11 +86,11 @@
     for (int i = 0; i < groupCount; i += 1)
     {
         ABRecordRef record    = [ABRecordArray objectAtIndex:i];
-        SCContactGroup *group = [[SCContactGroup alloc] init];
+        SCContactGroup *group = [[[SCContactGroup alloc] init] autorelease];
 
         if ([group readFromRecordRef:&record error:nil])
         {
-            [groupsArray addObject:[group autorelease]];
+            [groupsArray addObject:group];
         }
     }
     
@@ -135,7 +110,7 @@
         return YES;
     }
 
-    ABAddressBookRef addressBook = [SCContactAddressBook createAddressBookOptions:nil error:nil];
+    ABAddressBookRef addressBook = ABAddressBookCreate();
     CFErrorRef saveError         = NULL;
     result                       = ABAddressBookSave(addressBook, &saveError);
 
@@ -151,7 +126,7 @@
 
 - (void)revert
 {
-    ABAddressBookRef addressBook = [SCContactAddressBook createAddressBookOptions:nil error:nil];
+    ABAddressBookRef addressBook = ABAddressBookCreate();
     ABAddressBookRevert(addressBook);
     CFRelease(addressBook);
 }

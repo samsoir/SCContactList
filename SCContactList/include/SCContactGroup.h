@@ -17,8 +17,7 @@
     NSMutableSet *_contacts;
 }
 
-@property (nonatomic, retain) NSString      *groupName;
-@property (nonatomic, readonly) NSSet       *contacts;
+@property (nonatomic, retain) NSString       *groupName;
 
 #pragma mark - SCContactGroup lifecycle methods
 
@@ -32,9 +31,10 @@
 
 #pragma mark - SCContactRecordPersistence Methods
 
-- (BOOL)readFromRecordRef:(ABRecordRef *)recordRef error:(NSError **)error;
+- (BOOL)readFromRecordRef:(ABRecordRef)recordRef error:(NSError **)error;
 - (ABRecordRef)addressBook:(ABAddressBookRef)addressBook getABRecordWithID:(ABRecordID)recordID;
 
+- (NSSet *)contacts;
 - (void)addContactRecord:(id)record;
 - (void)removeContact:(id)record;
 - (void)addContactRecords:(NSSet *)records;

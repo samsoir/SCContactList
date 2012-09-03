@@ -45,10 +45,7 @@
     
     if (ABRecordSetValue(record, kABGroupNameProperty, self.groupName, &addressBookError))
     {
-        if (ABAddressBookSave(addressBook, &addressBookError))
-        {
-            result = NO;
-        }
+        result = ABAddressBookSave(addressBook, &addressBookError);
     }
     
     if (error != NULL && ! result)
@@ -64,13 +61,12 @@
 @implementation SCContactGroup
 
 @synthesize groupName   = _groupName;
-@synthesize contacts    = _contacts;
 
 #pragma mark - SCContactGroup lifecycle methods
 
 + (SCContactGroup *)createGroupWithName:(NSString *)groupName
 {
-    SCContactGroup *newGroup = [[SCContactGroup alloc] init];    
+    SCContactGroup *newGroup = [[SCContactGroup alloc] initWithABRecordID:kABRecordInvalidID];
     newGroup.groupName       = groupName;
     
     return [newGroup autorelease];
@@ -105,21 +101,22 @@
 {
     self = [super initWithABRecordID:recordID];
         
-    if (self && recordID > kABRecordInvalidID)
+    if (self)
     {
-        if ( ! [self readRecord:recordID error:nil])
+        _contacts = [[NSMutableSet alloc] initWithCapacity:10];
+        
+        if (recordID > kABRecordInvalidID)
         {
-            [self release];
-            return nil;
+            if ( ! [self readRecord:recordID error:nil])
+            {
+                return nil;
+            }            
         }
     }
 
+    NSLog(@"Contact Group initiated: %@", self);
+    
     return self;
-}
-
-- (id)init
-{
-    return [self initWithABRecordID:kABRecordInvalidID];
 }
 
 - (void)dealloc
@@ -146,9 +143,18 @@
 
 #pragma mark - SCContactRecord methods
 
+- (NSSet *)contacts
+{
+    return _contacts;
+}
+
 - (void)addContactRecord:(id)record
 {
+    NSLog(@"Adding record: %@ to NSMutableSet: %@", record, _contacts);
+        
     [_contacts addObject:record];
+    
+    NSLog(@"Contacts now: %i", [_contacts count]);
 }
 
 - (void)removeContact:(id)record
@@ -168,24 +174,14 @@
 
 #pragma mark - SCContactRecordPersistence Methods
 
-- (BOOL)readFromRecordRef:(ABRecordRef *)recordRef error:(NSError **)error
+- (BOOL)readFromRecordRef:(ABRecordRef)recordRef error:(NSError **)error
 {
     BOOL result = NO;    
 
-    ABPropertyID groupProperties[] = {
-        kABGroupNameProperty
-    };
+    CFTypeRef groupName = ABRecordCopyValue(recordRef, kABGroupNameProperty);
+    self.groupName      = (NSString *)groupName;
     
-    SEL groupPropertiesAccessorMethods[] = {
-        @selector(setGroupName:)
-    };
-    
-    int groupPropertiesCount = (sizeof(groupProperties) / sizeof(ABPropertyID));
-    
-    [self setProperties:groupProperties
-    withAccessorMethods:groupPropertiesAccessorMethods
-             fromRecord:recordRef
-     numberOfProperties:groupPropertiesCount];
+    CFRelease(groupName);
     
     self.ABRecordID = ABRecordGetRecordID(recordRef);
     
@@ -205,8 +201,7 @@
 {
     BOOL result                  = NO;
     NSError *createError         = nil;
-    ABAddressBookRef addressBook = [SCContactAddressBook createAddressBookOptions:nil
-                                                                            error:&createError];
+    ABAddressBookRef addressBook = ABAddressBookCreate();
     
     if (createError && error != NULL)
     {
@@ -238,6 +233,7 @@
             if (result)
             {
                 self.ABRecordID = ABRecordGetRecordID(newGroupRecord);
+                [self _resetState];
             }
         }
         
@@ -255,7 +251,7 @@
     
     NSError *readError = nil;
     
-    ABAddressBookRef addressBook = [SCContactAddressBook createAddressBookOptions:nil error:&readError];
+    ABAddressBookRef addressBook = ABAddressBookCreate();
     
     if ( ! addressBook && error != NULL)
     {
@@ -284,7 +280,7 @@
     }
     else
     {
-        result = [self readFromRecordRef:&record error:error];
+        result = [self readFromRecordRef:record error:error];
     }
     
     CFRelease(addressBook);
@@ -296,8 +292,7 @@
 {
     BOOL result                  = NO;
     NSError *updateError         = nil;
-    ABAddressBookRef addressBook = [SCContactAddressBook createAddressBookOptions:nil
-                                                                            error:&updateError];
+    ABAddressBookRef addressBook = ABAddressBookCreate();
     
     if (updateError && error != NULL)
     {

@@ -134,11 +134,23 @@
            fromRecord:(ABRecordRef)record
    numberOfProperties:(int)count
 {
+    if (record == NULL)
+    {
+        return;
+    }
+        
     for (int i = 0; i < count; i += 1)
     {
         ABPropertyID property = properties[i];
         SEL accessorMethod    = accessorMethods[i];
         id propertyValue      = nil;
+
+        if (property < 1)
+        {
+            continue;
+        }
+        
+        NSLog(@"Setting property:%s with value: %i with type %i from record:%i", sel_getName(accessorMethod), property, ABPersonGetTypeOfProperty(property), ABRecordGetRecordID(record));
         
         if (ABPersonGetTypeOfProperty(property) & kABMultiValueMask)
         {
@@ -146,7 +158,13 @@
         }
         else
         {
-            propertyValue = [(id)ABRecordCopyValue(record, property) autorelease];
+            
+            CFTypeRef valueRef = ABRecordCopyValue(record, property);
+            
+            if (valueRef != NULL)
+            {
+                propertyValue = [(id)valueRef autorelease];
+            }            
         }
         
         if (propertyValue)
@@ -154,7 +172,7 @@
             [self performSelector:accessorMethod
                        withObject:propertyValue];
         }
-    }
+    }    
 }
 
 - (NSMutableDictionary *)mutableDictionaryFromMultiValueProperty:(ABPropertyID)property record:(ABRecordRef)record
@@ -241,9 +259,9 @@
         return YES;
     }
     
-    ABAddressBookRef addressBook = [SCContactAddressBook createAddressBookOptions:nil error:nil];
+    ABAddressBookRef addressBook = ABAddressBookCreate();
     ABRecordRef record           = [self addressBook:addressBook getABRecordWithID:recordID];
-    
+        
     if (record == NULL)
     {
         if (error != NULL)
@@ -269,8 +287,21 @@
         }
         else
         {
-            result = YES;
-            self.ABRecordID = kABRecordInvalidID;
+            CFErrorRef saveError = NULL;
+            
+            result = ABAddressBookSave(addressBook, &saveError);
+            
+            if ( ! result && error != NULL)
+            {
+                *error = [(NSError *)saveError autorelease];
+            }
+            else
+            {
+                result = YES;
+                self.ABRecordID = kABRecordInvalidID;
+                
+                [self _resetState];
+            }
         }
     }
     

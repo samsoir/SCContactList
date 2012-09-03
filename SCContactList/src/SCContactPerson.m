@@ -96,7 +96,7 @@
     NSError *decorateError       = nil;
     
     // Decorate record
-    [self decorateABRecord:&record
+    [self decorateABRecord:record
           fieldsToDecorate:changesToModel
                      error:&decorateError];
     
@@ -218,7 +218,6 @@
         {
             if ( ! [self readRecord:self.ABRecordID error:nil])
             {
-                [self release];
                 return nil;
             }
         }
@@ -328,10 +327,12 @@
         ABMultiValueInsertValueAndLabelAtIndex(multiValue, objects[i], (CFStringRef)objectKeys[i], i, NULL);
     }
     
+    
+    CFRelease(multiValue);
     return multiValue;
 }
 
-- (BOOL)decorateABRecord:(ABRecordRef *)record fieldsToDecorate:(NSDictionary *)fieldsToDecorate error:(NSError **)error
+- (BOOL)decorateABRecord:(ABRecordRef)record fieldsToDecorate:(NSDictionary *)fieldsToDecorate error:(NSError **)error
 {
     BOOL result = NO;
     
@@ -398,7 +399,7 @@
     return result;
 }
 
-- (BOOL)readFromRecordRef:(ABRecordRef *)recordRef error:(NSError **)error
+- (BOOL)readFromRecordRef:(ABRecordRef)recordRef error:(NSError **)error
 {
     BOOL result = NO;
 
@@ -491,9 +492,8 @@
 {
     BOOL result                  = NO;
     NSError *createError         = nil;
-    ABAddressBookRef addressBook = [SCContactAddressBook createAddressBookOptions:nil
-                                                                            error:&createError];
-
+    ABAddressBookRef addressBook = ABAddressBookCreate();
+    
     if (createError && error != NULL)
     {
         *error = createError;
@@ -505,7 +505,7 @@
     }
     else
     {
-        ABRecordRef newPersonRecord  = ABPersonCreate();
+        ABRecordRef newPersonRecord = ABPersonCreate();
         CFErrorRef addError = NULL;
 
         if ( ! ABAddressBookAddRecord(addressBook, newPersonRecord, &addError))
@@ -538,22 +538,17 @@
 - (BOOL)readRecord:(ABRecordID)recordID error:(NSError **)error
 {
     BOOL result                  = NO;
-    NSError *readError           = nil;
-    ABAddressBookRef addressBook = [SCContactAddressBook createAddressBookOptions:nil
-                                                                            error:&readError];
+    ABAddressBookRef addressBook = ABAddressBookCreate();
     
-    if (readError && error != NULL)
+    ABRecordRef record = [self addressBook:addressBook getABRecordWithID:recordID];
+    
+    if (record == NULL)
     {
-        *error = readError;
+        NSLog(@"RecordID %i failed to load!", recordID);
     }
     
-    if ( ! addressBook || readError != nil)
-    {
-        return result;
-    }
+    result = [self readFromRecordRef:record error:error];
     
-    ABRecordRef record = [self addressBook:addressBook getABRecordWithID:self.ABRecordID];
-
     if (record == NULL)
     {
         if (error != NULL)
@@ -562,19 +557,18 @@
                                          code:kSCContactRecordReadError
                                      userInfo:nil];
         }
-        
-        return result;
     }
     
-    return [self readFromRecordRef:&record error:error];
+    CFRelease(addressBook);
+    
+    return result;
 }
 
 - (BOOL)updateRecord:(ABRecordID)recordID error:(NSError **)error
 {
     BOOL result                  = NO;
     NSError *updateError         = nil;
-    ABAddressBookRef addressBook = [SCContactAddressBook createAddressBookOptions:nil
-                                                                            error:&updateError];
+    ABAddressBookRef addressBook = ABAddressBookCreate();
     
     if (updateError && error != NULL)
     {

@@ -312,14 +312,14 @@
 
 - (void)testInitContactPersonID
 {
-    STAssertNil([[SCContactPerson alloc] initWithContactPersonID:nil], @"Should be nil");
+    STAssertNotNil([[SCContactPerson alloc] initWithABRecordID:kABRecordInvalidID], @"Should not be nil");
 
     NSNumber *contactID = [self.records objectAtIndex:0];
         
-    SCContactPerson *person = [[[SCContactPerson alloc] initWithContactPersonID:contactID] autorelease];
+    SCContactPerson *person = [[[SCContactPerson alloc] initWithABRecordID:[contactID intValue]] autorelease];
     
     STAssertTrue([person isKindOfClass:[SCContactPerson class]], @"Person should be an instance of SCContactPerson");
-    STAssertTrue([contactID isEqualToNumber:[person recordID]], @"Person record ID: %@ should be equal to: %@", [person recordID], contactID);
+    STAssertTrue([contactID intValue] == [person ABRecordID], @"Person record ID: %i should be equal to: %@", [person ABRecordID], contactID);
 }
 
 - (void)testIsSaved
@@ -329,7 +329,7 @@
     
     NSNumber *contactID = [self.records objectAtIndex:0];
     
-    SCContactPerson *existingPerson = [[[SCContactPerson alloc] initWithContactPersonID:contactID] autorelease];
+    SCContactPerson *existingPerson = [[[SCContactPerson alloc] initWithABRecordID:[contactID intValue]] autorelease];
     STAssertTrue([existingPerson isSaved], @"Existing person should be saved");
 }
 
@@ -337,10 +337,26 @@
 {
     ABRecordRef subjectRecord = [self createTestAddressBookRecord];
     
+    ABAddressBookRef addressBook = ABAddressBookCreate();
+    
+    ABAddressBookAddRecord(addressBook, subjectRecord, NULL);
+
+    if ( ! ABAddressBookSave(addressBook, NULL))
+    {
+        STFail(@"Failed saving AddressBook");
+    }
+    
+    CFRelease(addressBook);
+    
+    if (subjectRecord == NULL)
+    {
+        STFail(@"subjectRecord failed to initialize");
+    }
+    
     SCContactPerson *subject = [[SCContactPerson alloc] init];
     NSError *subjectError    = nil;
     
-    BOOL result = [subject loadRecord:subjectRecord
+    BOOL result = [subject readRecord:ABRecordGetRecordID(subjectRecord)
                                 error:&subjectError];
     
     STAssertTrue(result, @"Load person from record should be YES");
@@ -392,18 +408,18 @@
     CFRelease(subject);
 }
 
+/*
 - (void)testSave
 {
     ABRecordRef subjectRecord = [self createTestAddressBookRecord];
     
-    SCContactPerson *subject = [[SCContactPerson alloc] init];
-    [subject setABRecord:subjectRecord];
+    SCContactPerson *subject = [[SCContactPerson alloc] initWithABRecordID:ABRecordGetRecordID(subjectRecord)];
 
     NSError *subjectError    = nil;
     
-    [subject loadRecord:subjectRecord error:&subjectError];
+    [subject readFromRecordRef:&subjectRecord error:&subjectError];
 
-    STAssertTrue([subject saveRecord:subject.ABRecord error:nil], @"Save Record should be TRUE on save with no changes.");
+    STAssertTrue([subject updateRecord:subject.ABRecordID error:nil], @"Save Record should be TRUE on save with no changes.");
     
     NSString *newFirstName  = @"Robert";
     NSString *newLastName   = @"Clark";
@@ -425,7 +441,7 @@
     subject.phoneNumber = newPhone;
     subject.address     = newAddress;
     
-    STAssertTrue([subject saveRecord:subject.ABRecord error:nil], @"Save record should be TRUE");
+    STAssertTrue([subject updateRecord:subject.ABRecordID error:nil], @"Save record should be TRUE");
     
     NSString *savedFirstName  = [(NSString *)ABRecordCopyValue(subjectRecord, kABPersonFirstNameProperty) autorelease];
     NSString *savedLastName   = [(NSString *)ABRecordCopyValue(subjectRecord, kABPersonLastNameProperty) autorelease];
@@ -457,14 +473,12 @@
     
     ABRecordRef randomRecord = [recordsInserted objectAtIndex:0];
     ABRecordID recordID      = ABRecordGetRecordID(randomRecord);
-    
-    SCContactPerson *subject = [[[SCContactPerson alloc] init] autorelease];
-    [subject setABRecord:randomRecord];
-    [subject loadRecord:subject.ABRecord error:nil];
+        
+    SCContactPerson *subject = [[[SCContactPerson alloc] initWithABRecordID:recordID] autorelease];
     
     NSError *deleteError = nil;
     
-    STAssertTrue([subject deleteRecord:subject.ABRecord error:&deleteError], @"Deleting a valid model should return true");
+    STAssertTrue([subject deleteRecord:subject.ABRecordID error:&deleteError], @"Deleting a valid model should return true");
     
     NSArray *recordsRemaining = [(NSArray *)ABAddressBookCopyArrayOfAllPeople(addressBook) autorelease];
     int count = [recordsRemaining count];
@@ -489,8 +503,8 @@
     
     NSError *deleteError = nil;
     
-    STAssertFalse([subject deleteRecord:subject.ABRecord error:&deleteError], @"Deleting a valid model should return false");
+    STAssertFalse([subject deleteRecord:subject.ABRecordID error:&deleteError], @"Deleting a valid model should return false");
     STAssertNotNil(deleteError, @"Delete error should not be nil");
 }
-
+*/
 @end

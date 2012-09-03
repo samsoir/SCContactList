@@ -94,23 +94,20 @@
     STAssertNotNil(group, @"Group should not be nil");
     STAssertTrue([group isKindOfClass:[SCContactGroup class]], @"Group should be instance of SCContactGroup, got: %@", [group class]);
     STAssertTrue([group.groupName isEqualToString:groupName], @"Group name '%@' should equal '%@'", group.groupName, groupName);
-    STAssertTrue([group.contacts count] < 1, @"Group contacts should be empty");
+    STAssertTrue([[group contacts] count] < 1, @"Group contacts should be empty");
 }
 
 - (void)testContactGroupWithID
 {
-    NSNumber *badGroupID = nil;
-    STAssertNil([SCContactGroup contactGroupWithID:badGroupID], @"ContactGroupWithID should be nil when bad ID supplied");
-    
-    NSNumber *badGroupIDNotNil = [NSNumber numberWithInt:-1];
-    STAssertNil([SCContactGroup contactGroupWithID:badGroupIDNotNil], @"ContactGroupWithID should be nil when bad ID real int supplied");
+    STAssertNotNil([SCContactGroup contactGroupWithID:kABRecordInvalidID], @"ContactGroupWithID should not be nil when bad ID supplied");
     
     ABAddressBookRef addressBook = ABAddressBookCreate();
     CFArrayRef groups            = ABAddressBookCopyArrayOfAllGroups(addressBook);
     ABRecordRef group0           = CFArrayGetValueAtIndex(groups, 0);
     
-    NSNumber *goodGroupID0     = [NSNumber numberWithInt:ABRecordGetRecordID(group0)];
-    SCContactGroup *goodGroup0 = [SCContactGroup contactGroupWithID:goodGroupID0];
+    ABRecordID group0recordID    = ABRecordGetRecordID(group0);
+    
+    SCContactGroup *goodGroup0 = [SCContactGroup contactGroupWithID:group0recordID];
         
     STAssertNotNil(goodGroup0, @"goodGroup0 should not be nil");
     STAssertTrue([goodGroup0 isKindOfClass:[SCContactGroup class]], @"goodGroup0 should be of type SCContactGroup, got: %@", [goodGroup0 class]);
@@ -127,7 +124,9 @@
 
     NSString *group0name = ABRecordCopyValue(group0, kABGroupNameProperty);
     
-    SCContactGroup *group = [SCContactGroup contactGroupWithID:[NSNumber numberWithInt:ABRecordGetRecordID(group0)]];
+    ABRecordID group0recordID    = ABRecordGetRecordID(group0);
+    
+    SCContactGroup *group = [SCContactGroup contactGroupWithID:group0recordID];
     
     STAssertTrue([group.groupName isEqualToString:group0name], @"Group name should equal '%@', got: %@", group0name, group.groupName);
     
@@ -142,11 +141,11 @@
     SCContactGroup *group = [SCContactGroup createGroupWithName:@"testAddRecordGroup"];
     NSObject *testContact = [[[NSObject alloc] init] autorelease];
     
-    STAssertTrue(([group.contacts count] == 0), @"Number of contacts should equal 0, got: %i", [group.contacts count]);
+    STAssertTrue(([[group contacts] count] == 0), @"Number of contacts should equal 0, got: %i", [[group contacts] count]);
     
     [group addContactRecord:testContact];
     
-    STAssertTrue(([group.contacts count] == 1), @"Number of contacts should equal 1, got: %i", [group.contacts count]);
+    STAssertTrue(([[group contacts] count] == 1), @"Number of contacts should equal 1, got: %i", [[group contacts] count]);
 }
 
 - (void)testIsSaved
@@ -159,7 +158,7 @@
     CFArrayRef groups            = ABAddressBookCopyArrayOfAllGroups(addressBook);
     ABRecordRef group0           = CFArrayGetValueAtIndex(groups, 0);
         
-    SCContactGroup *groupExisting = [SCContactGroup contactGroupWithID:[NSNumber numberWithInt:ABRecordGetRecordID(group0)]];
+    SCContactGroup *groupExisting = [SCContactGroup contactGroupWithID:ABRecordGetRecordID(group0)];
 
     STAssertTrue([groupExisting isSaved], @"Group should be saved");
     
@@ -183,7 +182,7 @@
     
     NSError *saveError = nil;
     
-    STAssertTrue([newGroup save:&saveError], @"Should be able to save a new group");
+    STAssertTrue([newGroup createRecord:newGroup.ABRecordID error:&saveError], @"Should be able to save a new group");
     STAssertNil(saveError, @"There should be no save error saving a new group");
     
     ABAddressBookRef addressBook = ABAddressBookCreate();
@@ -214,44 +213,6 @@
     
 }
 
-- (void)testRemove
-{
-    SCContactGroup *existingGroup = [SCContactGroup contactGroupWithName:@"group1"];
-    
-    STAssertTrue([existingGroup isSaved], @"Group 1 should be saved!");
-    
-    NSError *removeError = nil;
-    
-    STAssertTrue([existingGroup remove:&removeError], @"Group should remove itself");
-    STAssertNil(removeError, @"There should be no remove error when deleting a group");
-
-    ABAddressBookRef addressBook = ABAddressBookCreate();
-    CFArrayRef groups            = ABAddressBookCopyArrayOfAllGroups(addressBook);
-    int groupsCount              = CFArrayGetCount(groups);
-    
-    BOOL existingGroupFound      = NO;
-    
-    for (int i = 0; i < groupsCount; i += 1)
-    {
-        ABRecordRef group   = CFArrayGetValueAtIndex(groups, i);
-        NSString *groupName = ABRecordCopyValue(group, kABGroupNameProperty);
-                
-        if ([groupName isEqualToString:existingGroup.groupName])
-        {
-            existingGroupFound = YES;
-            break;
-        }
-        
-        [groupName release];
-    }
-
-    STAssertFalse(existingGroupFound, @"The existing group should not be found in the address book");
-    STAssertFalse([existingGroup hasChanges], @"The existing group should not have changes");
-    STAssertFalse([existingGroup isSaved], @"The Existing group should not be saved");
-    
-    CFRelease(groups);
-    CFRelease(addressBook);
-}
 
 - (void)testDeleteRecordError
 {
@@ -263,15 +224,13 @@
     ABRecordRef randomRecord = [recordsInserted objectAtIndex:0];
     ABRecordID recordID      = ABRecordGetRecordID(randomRecord);
     
-    SCContactGroup *subject = [[[SCContactGroup alloc] init] autorelease];
-    [subject setABRecord:randomRecord];
-    [subject loadRecord:subject.ABRecord error:nil];
+    SCContactGroup *subject = [[[SCContactGroup alloc] initWithABRecordID:recordID] autorelease];
     
     NSError *deleteError = nil;
     
-    STAssertTrue([subject deleteRecord:subject.ABRecord error:&deleteError], @"Deleting a valid model should return true");
+    STAssertTrue([subject deleteRecord:subject.ABRecordID error:&deleteError], @"Deleting a valid model should return true");
     
-    NSArray *recordsRemaining = [(NSArray *)ABAddressBookCopyArrayOfAllPeople(addressBook) autorelease];
+    NSArray *recordsRemaining = [(NSArray *)ABAddressBookCopyArrayOfAllGroups(addressBook) autorelease];
     int count = [recordsRemaining count];
     
     for (int i = 0; i < count; i += 1)
@@ -289,12 +248,33 @@
 
 - (void)testDeleteRecordNotSaved
 {
+    NSString *testDeleteGroupName = @"Test Group Name";
+    
     SCContactGroup *subject = [[[SCContactGroup alloc] init] autorelease];
+    subject.groupName = testDeleteGroupName;
     
     NSError *deleteError = nil;
     
-    STAssertFalse([subject deleteRecord:subject.ABRecord error:&deleteError], @"Deleting a valid model should return false");
-    STAssertNotNil(deleteError, @"Delete error should not be nil");
+    STAssertTrue([subject deleteRecord:subject.ABRecordID error:&deleteError], @"Deleting a valid model should return YES");
+    STAssertNil(deleteError, @"Delete error should be nil");
+    
+    ABAddressBookRef addressBook = ABAddressBookCreate();
+    NSArray *groups = [(NSArray *)ABAddressBookCopyArrayOfAllGroups(addressBook) autorelease];
+
+    int count = [groups count];
+    
+    for (int i = 0; i < count; i += 1)
+    {
+        ABRecordRef record = groups[i];
+        NSString *foundGroupName = [(NSString *)ABRecordCopyValue(record, kABGroupNameProperty) autorelease];
+        
+        if ([foundGroupName isEqualToString:testDeleteGroupName])
+        {
+            STFail(@"Found group name :%@ that should be deleted", testDeleteGroupName);
+        }
+    }
+    
+    CFRelease(addressBook);
 }
 
 

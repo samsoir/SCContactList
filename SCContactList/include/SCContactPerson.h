@@ -97,11 +97,11 @@
 - (void)setImageDataFromRecord:(ABRecordRef)record;
 
 - (ABMutableMultiValueRef)createMultiValueForProperty:(ABPropertyType)propertyType withDictionary:(NSDictionary *)dictionary;
-- (BOOL)decorateABRecord:(ABRecordRef *)record fieldsToDecorate:(NSDictionary *)fieldsToDecorate error:(NSError **)error;
+- (BOOL)decorateABRecord:(ABRecordRef)record fieldsToDecorate:(NSDictionary *)fieldsToDecorate error:(NSError **)error;
 
 #pragma mark - SCContactPerson Persistent Methods
 
-- (BOOL)readFromRecordRef:(ABRecordRef *)recordRef error:(NSError **)error;
+- (BOOL)readFromRecordRef:(ABRecordRef)recordRef error:(NSError **)error;
 - (BOOL)createRecord:(ABRecordID)recordID error:(NSError **)error;
 - (BOOL)readRecord:(ABRecordID)recordID error:(NSError **)error;
 - (BOOL)updateRecord:(ABRecordID)recordID error:(NSError **)error;

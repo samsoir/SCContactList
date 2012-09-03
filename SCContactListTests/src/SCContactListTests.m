@@ -7,6 +7,7 @@
 //
 
 #import "SCContactListTests.h"
+#import "SCContactList.h"
 
 @implementation SCContactListTests
 
@@ -145,16 +146,16 @@
 
 - (void)testInitializeContactsDatabase
 {
-    SCContactList *contactList = [[SCContactList alloc] init];
+    SCContactAddressBook *contactList = [[SCContactAddressBook alloc] init];
     
-    int contactCount = [contactList.contactRecords count];
+    int contactCount = [[contactList getAllContacts] count];
     
     STAssertTrue((contactCount == 5), @"contact count should equal 5");
 }
 
 - (void)testCreateAddressBookDatabaseInstance
 {
-    ABAddressBookRef addressBook = [SCContactList createAddressBookOptions:nil error:nil];
+    ABAddressBookRef addressBook = ABAddressBookCreate();
     
     STAssertTrue((addressBook != NULL), @"addressBook should not be NULL");
 }

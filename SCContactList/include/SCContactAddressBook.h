@@ -10,8 +10,8 @@
 #import <AddressBook/AddressBook.h>
 #import "SCContactList.h"
 
-#ifndef kSCContactList
-#define kSCContactList
+#ifndef __SCContactAddressBook__
+#define __SCContactAddressBook__
 
 #define kSCContactListContactPersonBuffer 10
 #define kSCContactListContactGroupBuffer 10
@@ -19,9 +19,6 @@
 #endif
 
 @interface SCContactAddressBook : NSObject
-
-+ (ABAddressBookRef)createAddressBookOptions:(NSDictionary *)options error:(NSError **)error;
-
 
 #pragma mark - Interrogation Methods
 - (BOOL)addressBookHasChanges;
