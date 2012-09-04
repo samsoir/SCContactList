@@ -15,7 +15,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "7BD9CC4515B7101B00D6DAA8"
-               BuildableName = "libSCContactList.a"
+               BuildableName = "libSCContactList-.a"
                BlueprintName = "SCContactList"
                ReferencedContainer = "container:SCContactList.xcodeproj">
             </BuildableReference>
@@ -45,7 +45,7 @@
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       launchStyle = "0"
       useCustomWorkingDirectory = "NO"
-      buildConfiguration = "Debug"
+      buildConfiguration = "Release"
       ignoresPersistentStateOnLaunch = "NO"
       debugDocumentVersioning = "YES"
       allowLocationSimulation = "YES">
