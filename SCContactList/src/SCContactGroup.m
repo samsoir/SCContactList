@@ -107,6 +107,7 @@
         if (result)
         {
             _contactsLoaded  = YES;
+            [self _resetState];
         }
     }
 
@@ -212,7 +213,7 @@
 {
     BOOL result = [super hasChanges];
     
-    if (result && [self contactsLoaded])
+    if ( ! result && [self contactsLoaded])
     {
         result = [self contactsChanged];
     }
@@ -226,7 +227,7 @@
     
     if (result && [self contactsLoaded])
     {
-        result = [self contactsChanged];
+        result = ! [self contactsChanged];
     }
     
     return result;

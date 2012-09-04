@@ -167,15 +167,49 @@
     groupExisting.groupName = @"newGroupName";
   
     STAssertFalse([groupExisting isSaved], @"Group should not be saved");
+    
+    [groupExisting updateRecord:groupExisting.ABRecordID error:nil];
+    
+    STAssertTrue([groupExisting isSaved], @"Group should now by saved after update");
+    
+    [groupExisting loadContacts:nil];
+    
+    SCContactPerson *testPerson = [[[SCContactPerson alloc] initWithABRecordID:kABRecordInvalidID] autorelease];
+    
+    testPerson.firstName = @"Samuel";
+    testPerson.lastName  = @"Johnson";
+    
+    [groupExisting addContactRecord:testPerson];
+    
+    STAssertFalse([groupExisting isSaved], @"Group should not be saved with new relationship");
 }
 
 - (void)testHasChanges
 {
     SCContactGroup *newGroup = [[SCContactGroup alloc] init];
-    STAssertFalse([newGroup hasChanges], @"Group should not have any changes");
+    STAssertFalse([newGroup hasChanges], @"newGroup should not have any changes");
     
     newGroup.groupName = @"newGroupName";
-    STAssertTrue([newGroup hasChanges], @"Group should have changes");
+    STAssertTrue([newGroup hasChanges], @"newGroup should have changes");
+    
+    if ( ! [newGroup createRecord:kABRecordInvalidID error:nil])
+    {
+        STFail(@"newGroup was not created in Address Book");
+        return;
+    }
+    
+    STAssertFalse([newGroup hasChanges], @"newGroup should have no changes");
+    
+    [newGroup loadContacts:nil];
+    
+    SCContactPerson *testPerson = [[[SCContactPerson alloc] initWithABRecordID:kABRecordInvalidID] autorelease];
+    
+    testPerson.firstName = @"Samuel";
+    testPerson.lastName  = @"Johnson";
+    
+    [newGroup addContactRecord:testPerson];
+    
+    STAssertTrue([newGroup hasChanges], @"newGroup should have changes");
 }
 
 - (void)testSave
@@ -429,6 +463,5 @@
     CFRelease(groupContact);
     CFRelease(groups);
 }
-
 
 @end
