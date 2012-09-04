@@ -145,7 +145,7 @@
         SEL accessorMethod    = accessorMethods[i];
         id propertyValue      = nil;
 
-        if (property < 1)
+        if (property < 0)
         {
             continue;
         }

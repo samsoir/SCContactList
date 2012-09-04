@@ -10,11 +10,21 @@
 #import <AddressBook/AddressBook.h>
 #import "SCContactList.h"
 
+#ifndef __SCContactGroup__
+#define __SCContactGroup__
+
+#define SCContactGroupMutableSetCapacity 10
+
+#endif
+
 @interface SCContactGroup : SCContactRecord <SCContactRecordPersistence> {
 
     NSString     *_groupName;
     
     NSMutableSet *_contacts;
+    NSMutableSet *_removedContacts;
+    
+    BOOL          _contactsLoaded;
 }
 
 @property (nonatomic, retain) NSString       *groupName;
@@ -34,9 +44,12 @@
 - (BOOL)readFromRecordRef:(ABRecordRef)recordRef error:(NSError **)error;
 - (ABRecordRef)addressBook:(ABAddressBookRef)addressBook getABRecordWithID:(ABRecordID)recordID;
 
+- (BOOL)contactsLoaded;
+- (BOOL)loadContacts:(NSError **)error;
+
 - (NSSet *)contacts;
-- (void)addContactRecord:(id)record;
-- (void)removeContact:(id)record;
+- (void)addContactRecord:(SCContactPerson *)record;
+- (void)removeContact:(SCContactPerson *)record;
 - (void)addContactRecords:(NSSet *)records;
 - (void)removeContactRecords:(NSSet *)records;
 

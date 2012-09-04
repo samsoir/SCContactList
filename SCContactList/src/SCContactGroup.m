@@ -103,7 +103,9 @@
         
     if (self)
     {
-        _contacts = [[NSMutableSet alloc] initWithCapacity:10];
+        _contacts        = [[NSMutableSet alloc] initWithCapacity:SCContactGroupMutableSetCapacity];
+        _removedContacts = [[NSMutableSet alloc] initWithCapacity:SCContactGroupMutableSetCapacity];
+        _contactsLoaded  = NO;
         
         if (recordID > kABRecordInvalidID)
         {
@@ -123,6 +125,7 @@
 {
     [_groupName release];
     [_contacts release];
+    [_removedContacts release];
     
     [super dealloc];
 }
@@ -140,26 +143,98 @@
     return parentKeysToObserve;
 }
 
-
 #pragma mark - SCContactRecord methods
+
+- (void)_resetState
+{
+    [super _resetState];
+    
+    if (_contacts != nil)
+    {
+        [_contacts release];
+    }
+    
+    if (_removedContacts != nil)
+    {
+        [_removedContacts release];
+    }
+    
+    _contacts        = [[NSMutableSet alloc] initWithCapacity:SCContactGroupMutableSetCapacity];
+    _removedContacts = [[NSMutableSet alloc] initWithCapacity:SCContactGroupMutableSetCapacity];
+    _contactsLoaded  = NO;
+}
+
+- (BOOL)contactsLoaded
+{
+    return _contactsLoaded;
+}
+
+- (BOOL)loadContacts:(NSError **)error
+{
+    BOOL result = NO;
+    
+    if (self.ABRecordID > kABRecordInvalidID)
+    {
+        ABAddressBookRef addressBook = ABAddressBookCreate();
+        ABRecordRef groupRecordRef   = [self addressBook:addressBook getABRecordWithID:self.ABRecordID];
+        
+        NSArray *groupContacts = [(NSArray *)ABGroupCopyArrayOfAllMembers(groupRecordRef) autorelease];
+        int groupContactsCount = [groupContacts count];
+
+        NSMutableArray *groupPersonRecords = [NSMutableArray arrayWithCapacity:groupContactsCount];
+        
+        for (int i = 0; i < groupContactsCount; i += 1)
+        {
+            ABRecordRef personRecordRef = [groupContacts objectAtIndex:i];
+            
+            SCContactPerson *personRecord = [[SCContactPerson alloc] initWithABRecordID:kABRecordInvalidID];
+            
+            NSError *readError = nil;
+            
+            if ( ! [personRecord readFromRecordRef:personRecordRef error:&readError])
+            {
+                if (error != NULL)
+                {
+                    *error = readError;
+                }
+                
+                break;
+            }
+            else
+            {
+                [groupPersonRecords insertObject:personRecord atIndex:i];
+            }
+        }
+        
+        [_contacts addObjectsFromArray:groupPersonRecords];
+        
+        CFRelease(addressBook);
+        
+        result = YES;
+        _contactsLoaded = YES;
+    }
+    else
+    {
+        result = YES;
+        _contactsLoaded = YES;
+    }
+    
+    return result;
+}
 
 - (NSSet *)contacts
 {
     return _contacts;
 }
 
-- (void)addContactRecord:(id)record
+- (void)addContactRecord:(SCContactPerson *)record
 {
-    NSLog(@"Adding record: %@ to NSMutableSet: %@", record, _contacts);
-        
     [_contacts addObject:record];
-    
-    NSLog(@"Contacts now: %i", [_contacts count]);
 }
 
-- (void)removeContact:(id)record
+- (void)removeContact:(SCContactPerson *)record
 {
-    
+    [_contacts removeObject:record];
 }
 
 - (void)addContactRecords:(NSSet *)records

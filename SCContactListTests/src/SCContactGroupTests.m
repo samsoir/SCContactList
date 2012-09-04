@@ -35,6 +35,8 @@
         
         ABAddressBookAddRecord(addressBook, group, &addError);
         
+        
+        
         if (addError != NULL)
         {
             STFail(@"Error adding group to AddressBook");
@@ -139,7 +141,7 @@
 - (void)testAddContactRecord
 {
     SCContactGroup *group = [SCContactGroup createGroupWithName:@"testAddRecordGroup"];
-    NSObject *testContact = [[[NSObject alloc] init] autorelease];
+    SCContactPerson *testContact = [[[SCContactPerson alloc] init] autorelease];
     
     STAssertTrue(([[group contacts] count] == 0), @"Number of contacts should equal 0, got: %i", [[group contacts] count]);
     
@@ -277,5 +279,58 @@
     CFRelease(addressBook);
 }
 
+- (void)testContactsLoadedOnEmptyGroup
+{
+    SCContactGroup *subject = [[[SCContactGroup alloc] init] autorelease];
+    
+    STAssertFalse([subject contactsLoaded], @"ContactsLoaded should be NO");
+    STAssertTrue([subject loadContacts:nil], @"LoadContacts should be YES");
+    
+    int contactsCount = [[subject contacts] count];
+    
+    STAssertEquals(contactsCount, 0, @"Subject contacts should equal 0");
+    STAssertTrue([subject contactsLoaded], @"ContactsLoaded should be YES");
+}
+
+- (void)testContactsLoadedOnExistingGroup
+{
+    ABAddressBookRef addressBook = ABAddressBookCreate();
+    CFArrayRef groups            = ABAddressBookCopyArrayOfAllGroups(addressBook);
+    int groupsCount              = CFArrayGetCount(groups);
+
+    if (groupsCount < 1)
+    {
+        STFail(@"Unable to load group from address book");
+    }
+
+    ABRecordRef loadedGroup  = CFArrayGetValueAtIndex(groups, 0);
+    ABRecordID loadedGroupID = ABRecordGetRecordID(loadedGroup);
+    
+    NSString *testUserFirstName = @"Test";
+    NSString *testUserLastName  = @"User";
+    
+    ABRecordRef groupContact = ABPersonCreate();
+    ABRecordSetValue(groupContact, kABPersonFirstNameProperty, testUserFirstName, NULL);
+    ABRecordSetValue(groupContact, kABPersonLastNameProperty, testUserLastName, NULL);
+    ABAddressBookAddRecord(addressBook, groupContact, NULL);
+    ABGroupAddMember(loadedGroup, groupContact, NULL);
+    ABAddressBookSave(addressBook, NULL);
+    
+    SCContactGroup *subject = [[[SCContactGroup alloc] initWithABRecordID:loadedGroupID] autorelease];
+
+    STAssertFalse([subject contactsLoaded], @"ContactsLoaded shoud be NO");
+    STAssertTrue([subject loadContacts:nil], @"LoadContacts should be YES");
+    
+    int contactsCount = [[subject contacts] count];
+    
+    STAssertEquals(contactsCount, 1, @"Contacts count should equal 1");
+    
+    NSSet *personRecordsSet = [subject contacts];
+    
+    SCContactPerson *personRecord = [personRecordsSet anyObject];
+        
+    STAssertTrue([personRecord.firstName isEqual:testUserFirstName], @"PersonRecord.firstName: %@ should equal: %@", personRecord.firstName, testUserFirstName);
+    STAssertTrue([personRecord.lastName isEqual:testUserLastName], @"PersonRecord.lastName: %@ should equal: %@", personRecord.lastName, testUserLastName);
+}
 
 @end
