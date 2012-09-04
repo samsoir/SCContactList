@@ -412,6 +412,7 @@
 				DSTROOT = /tmp/SCContactList.dst;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "SCContactList/SCContactList-Prefix.pch";
+				HEADER_SEARCH_PATHS = "${CONFIGURATION_BUILD_DIR}";
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -425,6 +426,7 @@
 				DSTROOT = /tmp/SCContactList.dst;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "SCContactList/SCContactList-Prefix.pch";
+				HEADER_SEARCH_PATHS = "${CONFIGURATION_BUILD_DIR}";
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -441,6 +443,7 @@
 				);
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "SCContactList/SCContactList-Prefix.pch";
+				HEADER_SEARCH_PATHS = "${CONFIGURATION_BUILD_DIR}";
 				INFOPLIST_FILE = "SCContactListTests/SCContactListTests-Info.plist";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				USER_HEADER_SEARCH_PATHS = "${SRCROOT}/SCContactListTests/include/** ${SRCROOT}/SCContactList/include/**";
@@ -457,6 +460,7 @@
 				);
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "SCContactList/SCContactList-Prefix.pch";
+				HEADER_SEARCH_PATHS = "${CONFIGURATION_BUILD_DIR}";
 				INFOPLIST_FILE = "SCContactListTests/SCContactListTests-Info.plist";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				USER_HEADER_SEARCH_PATHS = "${SRCROOT}/SCContactListTests/include/** ${SRCROOT}/SCContactList/include/**";
