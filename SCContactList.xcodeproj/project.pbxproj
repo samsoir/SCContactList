@@ -12,6 +12,11 @@
 		7BBAEF2D15BDAB72005CEAEF /* SCContactPerson.m in Sources */ = {isa = PBXBuildFile; fileRef = 7BBAEF2515BDAAEE005CEAEF /* SCContactPerson.m */; };
 		7BBAEF3015BDACFC005CEAEF /* SCContactRecord.m in Sources */ = {isa = PBXBuildFile; fileRef = 7BBAEF2F15BDACFC005CEAEF /* SCContactRecord.m */; };
 		7BBAEF3315BDAD23005CEAEF /* SCContactRecord.m in Sources */ = {isa = PBXBuildFile; fileRef = 7BBAEF2F15BDACFC005CEAEF /* SCContactRecord.m */; };
+		7BD870ED15F5818300FAC774 /* SCContactAddressBook.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 7B7A921815E81C0800ED4325 /* SCContactAddressBook.h */; };
+		7BD870EE15F5818300FAC774 /* SCContactList.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 7B7A921315E81B4600ED4325 /* SCContactList.h */; };
+		7BD870EF15F5818300FAC774 /* SCContactGroup.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 7B7A921415E81B4600ED4325 /* SCContactGroup.h */; };
+		7BD870F015F5818300FAC774 /* SCContactPerson.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 7B7A921615E81B4600ED4325 /* SCContactPerson.h */; };
+		7BD870F115F5818300FAC774 /* SCContactRecord.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 7B7A921715E81B4600ED4325 /* SCContactRecord.h */; };
 		7BD9CC4A15B7101B00D6DAA8 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7BD9CC4915B7101B00D6DAA8 /* Foundation.framework */; };
 		7BD9CC5915B7101B00D6DAA8 /* SenTestingKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7BD9CC5815B7101B00D6DAA8 /* SenTestingKit.framework */; };
 		7BD9CC5C15B7101B00D6DAA8 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7BD9CC4915B7101B00D6DAA8 /* Foundation.framework */; };
@@ -42,9 +47,14 @@
 		7BD9CC4415B7101B00D6DAA8 /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
-			dstPath = "include/${PRODUCT_NAME}";
+			dstPath = include;
 			dstSubfolderSpec = 16;
 			files = (
+				7BD870ED15F5818300FAC774 /* SCContactAddressBook.h in CopyFiles */,
+				7BD870EE15F5818300FAC774 /* SCContactList.h in CopyFiles */,
+				7BD870EF15F5818300FAC774 /* SCContactGroup.h in CopyFiles */,
+				7BD870F015F5818300FAC774 /* SCContactPerson.h in CopyFiles */,
+				7BD870F115F5818300FAC774 /* SCContactRecord.h in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
