@@ -48,6 +48,7 @@
 - (BOOL)contactsLoaded;
 - (BOOL)contactsChanged;
 - (BOOL)loadContacts:(NSError **)error;
+- (NSSet *)filterContactsSetWithPredicate:(NSPredicate *)predicate;
 
 - (NSSet *)contacts;
 - (void)addContactRecord:(SCContactPerson *)record;

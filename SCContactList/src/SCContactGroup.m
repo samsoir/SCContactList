@@ -317,6 +317,11 @@
     return result;
 }
 
+- (NSSet *)filterContactsSetWithPredicate:(NSPredicate *)predicate
+{
+    return [_contacts filteredSetUsingPredicate:predicate];
+}
+
 - (NSSet *)contacts
 {
     return _contacts;
