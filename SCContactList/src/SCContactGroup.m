@@ -165,8 +165,8 @@
         
     if (self)
     {
-        _contacts        = [[NSMutableSet alloc] initWithCapacity:SCContactGroupMutableSetCapacity];
-        _removedContacts = [[NSMutableSet alloc] initWithCapacity:SCContactGroupMutableSetCapacity];
+        _contacts        = [[NSMutableSet alloc] initWithCapacity:kSCContactGroupMutableSetCapacity];
+        _removedContacts = [[NSMutableSet alloc] initWithCapacity:kSCContactGroupMutableSetCapacity];
         _contactsLoaded  = NO;
         _contactsChanged = NO;
         
@@ -248,8 +248,8 @@
         [_removedContacts release];
     }
     
-    _contacts        = [[NSMutableSet alloc] initWithCapacity:SCContactGroupMutableSetCapacity];
-    _removedContacts = [[NSMutableSet alloc] initWithCapacity:SCContactGroupMutableSetCapacity];
+    _contacts        = [[NSMutableSet alloc] initWithCapacity:kSCContactGroupMutableSetCapacity];
+    _removedContacts = [[NSMutableSet alloc] initWithCapacity:kSCContactGroupMutableSetCapacity];
     _contactsLoaded  = NO;
     _contactsChanged = NO;
 }

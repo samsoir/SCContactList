@@ -13,7 +13,7 @@
 #ifndef __SCContactGroup__
 #define __SCContactGroup__
 
-#define SCContactGroupMutableSetCapacity 10
+#define kSCContactGroupMutableSetCapacity 10
 
 #endif
 
