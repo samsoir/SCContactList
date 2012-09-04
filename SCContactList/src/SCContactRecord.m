@@ -149,9 +149,7 @@
         {
             continue;
         }
-        
-        NSLog(@"Setting property:%s with value: %i with type %i from record:%i", sel_getName(accessorMethod), property, ABPersonGetTypeOfProperty(property), ABRecordGetRecordID(record));
-        
+                
         if (ABPersonGetTypeOfProperty(property) & kABMultiValueMask)
         {
             propertyValue = (id)[self mutableDictionaryFromMultiValueProperty:property record:record];

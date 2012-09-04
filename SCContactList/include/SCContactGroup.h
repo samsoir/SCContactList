@@ -23,8 +23,9 @@
     
     NSMutableSet *_contacts;
     NSMutableSet *_removedContacts;
-    
+     
     BOOL          _contactsLoaded;
+    BOOL          _contactsChanged;
 }
 
 @property (nonatomic, retain) NSString       *groupName;
@@ -45,6 +46,7 @@
 - (ABRecordRef)addressBook:(ABAddressBookRef)addressBook getABRecordWithID:(ABRecordID)recordID;
 
 - (BOOL)contactsLoaded;
+- (BOOL)contactsChanged;
 - (BOOL)loadContacts:(NSError **)error;
 
 - (NSSet *)contacts;

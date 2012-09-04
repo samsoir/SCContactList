@@ -333,4 +333,102 @@
     STAssertTrue([personRecord.lastName isEqual:testUserLastName], @"PersonRecord.lastName: %@ should equal: %@", personRecord.lastName, testUserLastName);
 }
 
+- (void)testContactsAddRecord
+{
+    ABAddressBookRef addressBook = ABAddressBookCreate();
+    CFArrayRef groups            = ABAddressBookCopyArrayOfAllGroups(addressBook);
+    int groupsCount              = CFArrayGetCount(groups);
+    
+    if (groupsCount < 1)
+    {
+        STFail(@"Unable to load group from address book");
+    }
+    
+    ABRecordRef loadedGroup  = CFArrayGetValueAtIndex(groups, 0);
+    ABRecordID loadedGroupID = ABRecordGetRecordID(loadedGroup);
+
+    NSString *testUserFirstName = @"Test";
+    NSString *testUserLastName  = @"User";
+    
+    ABRecordRef groupContact = ABPersonCreate();
+    ABRecordSetValue(groupContact, kABPersonFirstNameProperty, testUserFirstName, NULL);
+    ABRecordSetValue(groupContact, kABPersonLastNameProperty, testUserLastName, NULL);
+    ABAddressBookAddRecord(addressBook, groupContact, NULL);
+    ABAddressBookSave(addressBook, NULL);
+    
+    SCContactGroup *subject = [[[SCContactGroup alloc] initWithABRecordID:loadedGroupID] autorelease];
+
+    [subject loadContacts:nil];
+    
+    int subjectPersonRecordCount = [[subject contacts] count];
+    
+    STAssertEquals(subjectPersonRecordCount, 0, @"Subject should have no contacts");
+    STAssertTrue([subject contactsLoaded], @"Contacts have loaded");
+    STAssertFalse([subject contactsChanged], @"Contacts should not have changed");
+    
+    SCContactPerson *subjectPerson = [[[SCContactPerson alloc] initWithABRecordID:ABRecordGetRecordID(groupContact)] autorelease];
+    
+    [subject addContactRecord:subjectPerson];
+    
+    subjectPersonRecordCount = [[subject contacts] count];
+    
+    STAssertEquals(subjectPersonRecordCount, 1, @"Subject should have 1 contact");
+    STAssertTrue([subject contactsLoaded], @"Contacts should still be loaded");
+    STAssertTrue([subject contactsChanged], @"Contacts shdould now be changed");
+    
+    CFRelease(addressBook);
+    CFRelease(groupContact);
+    CFRelease(groups);
+}
+
+- (void)testContactsRemoveRecord
+{
+    ABAddressBookRef addressBook = ABAddressBookCreate();
+    CFArrayRef groups            = ABAddressBookCopyArrayOfAllGroups(addressBook);
+    int groupsCount              = CFArrayGetCount(groups);
+    
+    if (groupsCount < 1)
+    {
+        STFail(@"Unable to load group from address book");
+    }
+    
+    ABRecordRef loadedGroup  = CFArrayGetValueAtIndex(groups, 0);
+    ABRecordID loadedGroupID = ABRecordGetRecordID(loadedGroup);
+    
+    NSString *testUserFirstName = @"Test";
+    NSString *testUserLastName  = @"User";
+    
+    ABRecordRef groupContact = ABPersonCreate();
+    ABRecordSetValue(groupContact, kABPersonFirstNameProperty, testUserFirstName, NULL);
+    ABRecordSetValue(groupContact, kABPersonLastNameProperty, testUserLastName, NULL);
+    ABAddressBookAddRecord(addressBook, groupContact, NULL);
+    ABGroupAddMember(loadedGroup, groupContact, NULL);
+    ABAddressBookSave(addressBook, NULL);
+    
+    SCContactGroup *subject = [[[SCContactGroup alloc] initWithABRecordID:loadedGroupID] autorelease];
+    
+    [subject loadContacts:nil];
+    
+    int subjectPersonRecordCount = [[subject contacts] count];
+    
+    STAssertEquals(subjectPersonRecordCount, 1, @"Subject should have 1 contact");
+    STAssertTrue([subject contactsLoaded], @"Contacts have loaded");
+    STAssertFalse([subject contactsChanged], @"Contacts should not have changed");
+    
+    SCContactPerson *subjectPerson = [[subject contacts] anyObject];
+    
+    [subject removeContact:subjectPerson];
+    
+    subjectPersonRecordCount = [[subject contacts] count];
+    
+    STAssertEquals(subjectPersonRecordCount, 0, @"Subject should have no contacts");
+    STAssertTrue([subject contactsLoaded], @"Contacts should still be loaded");
+    STAssertTrue([subject contactsChanged], @"Contacts shdould now be changed");
+    
+    CFRelease(addressBook);
+    CFRelease(groupContact);
+    CFRelease(groups);
+}
+
+
 @end

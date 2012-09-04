@@ -45,10 +45,72 @@
     
     if (ABRecordSetValue(record, kABGroupNameProperty, self.groupName, &addressBookError))
     {
+        // Add records
+        NSArray *contactRecords = [_contacts allObjects];
+        CFErrorRef addError     = NULL;
+        
+        for (SCContactPerson *addPerson in contactRecords)
+        {
+            if ( ! [addPerson recordExistsInDatabase])
+            {
+                NSError *createRecordError = nil;
+                
+                if ( ! [addPerson createRecord:addPerson.ABRecordID error:&createRecordError])
+                {
+                    if (error != NULL)
+                    {
+                        *error = createRecordError;
+                    }
+                    
+                    return result;
+                }
+            }
+            
+            ABRecordRef personRecord = [addPerson addressBook:addressBook getABRecordWithID:addPerson.ABRecordID];
+            
+            if ( ! ABGroupAddMember(record, personRecord, &addressBookError))
+            {
+                if (error != NULL)
+                {
+                    *error = [(NSError *)addError autorelease];
+                }
+                
+                return result;
+            }
+        }
+        
+        NSArray *removeRecords = [_removedContacts allObjects];
+        CFErrorRef removeError = NULL;
+        
+        for (SCContactPerson *removePerson in removeRecords)
+        {
+            if ( ! [removePerson recordExistsInDatabase])
+            {
+                continue;
+            }
+            
+            ABRecordRef removePersonRecord = [removePerson addressBook:addressBook getABRecordWithID:removePerson.ABRecordID];
+            
+            if ( ! ABGroupRemoveMember(record, removePersonRecord, &removeError))
+            {
+                if (error != NULL)
+                {
+                    *error = [(NSError *)removeError autorelease];
+                }
+                
+                return result;
+            }
+        }
+        
         result = ABAddressBookSave(addressBook, &addressBookError);
+        
+        if (result)
+        {
+            _contactsLoaded  = YES;
+        }
     }
-    
-    if (error != NULL && ! result)
+
+    if ( ! result && error != NULL)
     {
         *error = [(NSError *)addressBookError autorelease];
     }
@@ -106,6 +168,7 @@
         _contacts        = [[NSMutableSet alloc] initWithCapacity:SCContactGroupMutableSetCapacity];
         _removedContacts = [[NSMutableSet alloc] initWithCapacity:SCContactGroupMutableSetCapacity];
         _contactsLoaded  = NO;
+        _contactsChanged = NO;
         
         if (recordID > kABRecordInvalidID)
         {
@@ -130,7 +193,7 @@
     [super dealloc];
 }
 
-#pragma mark - Key/Value Observing Methods
+#pragma mark - SCContactGroup Key/Value Observing
 
 - (NSArray *)objectKeysToObserve
 {
@@ -141,6 +204,32 @@
     [parentKeysToObserve addObjectsFromArray:keysToObserve];
     
     return parentKeysToObserve;
+}
+
+#pragma mark - SCContactRecord properties
+
+- (BOOL)hasChanges
+{
+    BOOL result = [super hasChanges];
+    
+    if (result && [self contactsLoaded])
+    {
+        result = [self contactsChanged];
+    }
+    
+    return result;
+}
+
+- (BOOL)isSaved
+{
+    BOOL result = [super isSaved];
+    
+    if (result && [self contactsLoaded])
+    {
+        result = [self contactsChanged];
+    }
+    
+    return result;
 }
 
 #pragma mark - SCContactRecord methods
@@ -162,11 +251,17 @@
     _contacts        = [[NSMutableSet alloc] initWithCapacity:SCContactGroupMutableSetCapacity];
     _removedContacts = [[NSMutableSet alloc] initWithCapacity:SCContactGroupMutableSetCapacity];
     _contactsLoaded  = NO;
+    _contactsChanged = NO;
 }
 
 - (BOOL)contactsLoaded
 {
     return _contactsLoaded;
+}
+
+- (BOOL)contactsChanged
+{
+    return _contactsChanged;
 }
 
 - (BOOL)loadContacts:(NSError **)error
@@ -230,21 +325,45 @@
 - (void)addContactRecord:(SCContactPerson *)record
 {
     [_contacts addObject:record];
+    [_removedContacts removeObject:record];
+    
+    _contactsChanged = YES;
 }
 
 - (void)removeContact:(SCContactPerson *)record
 {
     [_contacts removeObject:record];
+    [_removedContacts addObject:record];
+
+    _contactsChanged = YES;
 }
 
 - (void)addContactRecords:(NSSet *)records
 {
-    
+    NSArray *recordsArray = [records allObjects];
+
+    [_contacts addObjectsFromArray:recordsArray];
+
+    for (SCContactPerson *record in recordsArray)
+    {
+        [_removedContacts removeObject:records];
+    }
+
+    _contactsChanged = YES;
 }
 
 - (void)removeContactRecords:(NSSet *)records
 {
+    NSArray *recordsArray = [records allObjects];
     
+    [_removedContacts addObjectsFromArray:recordsArray];
+    
+    for (SCContactPerson *record in recordsArray)
+    {
+        [_contacts removeObject:records];
+    }    
+
+    _contactsChanged = YES;
 }
 
 #pragma mark - SCContactRecordPersistence Methods
