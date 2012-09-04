@@ -125,9 +125,7 @@
         [self updateRecordModificationDates:record];
         [self _resetState];
     }
-    
-    CFRelease(addressBook);
-    
+        
     return result;
 }
 
@@ -144,7 +142,7 @@
     }
     
     _creationDate     = (NSDate *)ABRecordCopyValue(record, kABPersonCreationDateProperty);
-    _modificationDate = (NSDate *)ABRecordCopyValue(record, kABPersonModificationDateProperty);
+    _modificationDate = (NSDate *)ABRecordCopyValue(record, kABPersonModificationDateProperty);    
 }
 
 @end
@@ -326,10 +324,8 @@
     {
         ABMultiValueInsertValueAndLabelAtIndex(multiValue, objects[i], (CFStringRef)objectKeys[i], i, NULL);
     }
-    
-    
-    CFRelease(multiValue);
-    return multiValue;
+        
+    return [(id)multiValue autorelease];
 }
 
 - (BOOL)decorateABRecord:(ABRecordRef)record fieldsToDecorate:(NSDictionary *)fieldsToDecorate error:(NSError **)error
@@ -346,6 +342,8 @@
         NSDictionary *change    = [fieldsToDecorate valueForKey:fieldToDecorate];
         id value                = [change valueForKey:NSKeyValueChangeNewKey];
         ABPropertyType type     = ABPersonGetTypeOfProperty(propertyID);
+        
+        NSLog(@"Decorating property: %i with value: %@", propertyID, value);
         
         if (value == nil)
         {
@@ -527,7 +525,7 @@
             }
         }
 
-        CFRelease(newPersonRecord);
+        CFRelease(newPersonRecord);        
     }
     
     CFRelease(addressBook);
@@ -569,6 +567,8 @@
     BOOL result                  = NO;
     NSError *updateError         = nil;
     ABAddressBookRef addressBook = ABAddressBookCreate();
+    
+    NSLog(@"Update record id: %i", recordID);
     
     if (updateError && error != NULL)
     {

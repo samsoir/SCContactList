@@ -305,6 +305,8 @@
     }
     
     CFRelease(recordsInserted);
+    CFRelease(addressBook);
+    
     self.records = nil;
     
     [super tearDown];
@@ -408,16 +410,31 @@
     CFRelease(subject);
 }
 
-/*
 - (void)testSave
 {
+    ABAddressBookRef addressBook = ABAddressBookCreate();
     ABRecordRef subjectRecord = [self createTestAddressBookRecord];
+
+    CFErrorRef error = NULL;
     
+    if ( ! ABAddressBookAddRecord(addressBook, subjectRecord, &error))
+    {
+        STFail(@"Address Book add record failed with error: %@", error);
+        return;
+    }
+
+    if ( ! ABAddressBookSave(addressBook, &error))
+    {
+        STFail(@"Address Book save failed with error:%@", error);
+    }
+    
+    CFRelease(addressBook);
+
     SCContactPerson *subject = [[SCContactPerson alloc] initWithABRecordID:ABRecordGetRecordID(subjectRecord)];
 
     NSError *subjectError    = nil;
     
-    [subject readFromRecordRef:&subjectRecord error:&subjectError];
+    [subject readFromRecordRef:subjectRecord error:&subjectError];
 
     STAssertTrue([subject updateRecord:subject.ABRecordID error:nil], @"Save Record should be TRUE on save with no changes.");
     
@@ -443,12 +460,21 @@
     
     STAssertTrue([subject updateRecord:subject.ABRecordID error:nil], @"Save record should be TRUE");
     
-    NSString *savedFirstName  = [(NSString *)ABRecordCopyValue(subjectRecord, kABPersonFirstNameProperty) autorelease];
-    NSString *savedLastName   = [(NSString *)ABRecordCopyValue(subjectRecord, kABPersonLastNameProperty) autorelease];
-    NSString *savedMiddleName = [(NSString *)ABRecordCopyValue(subjectRecord, kABPersonMiddleNameProperty) autorelease];
-    NSString *savedNickName   = [(NSString *)ABRecordCopyValue(subjectRecord, kABPersonNicknameProperty) autorelease];;
+    NSLog(@"Subject record saved: %i with ID: %i", [subject isSaved], subject.ABRecordID);
     
-    ABMultiValueRef addressValue = ABRecordCopyValue(subjectRecord, kABPersonAddressProperty);
+    ABAddressBookRef secondAddressBook = ABAddressBookCreate();
+    
+    ABRecordRef testSubjectRecord = ABAddressBookGetPersonWithRecordID(secondAddressBook, subject.ABRecordID);
+    
+    NSLog(@"testSubjectID: %i", ABRecordGetRecordID(testSubjectRecord));
+    NSLog(@"testSubject First Name: %@", [(NSString *)ABRecordCopyValue(testSubjectRecord, kABPersonFirstNameProperty) autorelease]);
+    
+    NSString *savedFirstName  = [(NSString *)ABRecordCopyValue(testSubjectRecord, kABPersonFirstNameProperty) autorelease];
+    NSString *savedLastName   = [(NSString *)ABRecordCopyValue(testSubjectRecord, kABPersonLastNameProperty) autorelease];
+    NSString *savedMiddleName = [(NSString *)ABRecordCopyValue(testSubjectRecord, kABPersonMiddleNameProperty) autorelease];
+    NSString *savedNickName   = [(NSString *)ABRecordCopyValue(testSubjectRecord, kABPersonNicknameProperty) autorelease];;
+    
+    ABMultiValueRef addressValue = ABRecordCopyValue(testSubjectRecord, kABPersonAddressProperty);
     NSArray *addresses = [(NSArray *)ABMultiValueCopyArrayOfAllValues(addressValue) autorelease];
     
     STAssertTrue([subject.firstName isEqualToString:savedFirstName], @"Subject firstname: %@ should match saved firstname: %@", subject.firstName, savedFirstName);
@@ -460,6 +486,7 @@
     
     STAssertTrue([[[subject.address objectForKey:(NSString *)kABHomeLabel] objectForKey:(NSString *)kABPersonAddressStreetKey] isEqualToString:[savedAddress objectForKey:(NSString *)kABPersonAddressStreetKey]], @"Subject Street Address: %@ should match saved Street Address: %@",[[subject.address objectForKey:(NSString *)kABHomeLabel] objectForKey:(NSString *)kABPersonAddressStreetKey], [savedAddress objectForKey:(NSString *)kABPersonAddressStreetKey]);
     
+    CFRelease(secondAddressBook);
     CFRelease(addressValue);
     CFRelease(subjectRecord);
 }
@@ -496,6 +523,7 @@
     CFRelease(addressBook);
 }
 
+
 - (void)testDeleteRecordNotSaved
 {
     SCContactPerson *subject = [[[SCContactPerson alloc] init] autorelease];
@@ -503,8 +531,8 @@
     
     NSError *deleteError = nil;
     
-    STAssertFalse([subject deleteRecord:subject.ABRecordID error:&deleteError], @"Deleting a valid model should return false");
-    STAssertNotNil(deleteError, @"Delete error should not be nil");
+    STAssertTrue([subject deleteRecord:subject.ABRecordID error:&deleteError], @"Deleting a valid model should return YES");
+    STAssertNil(deleteError, @"Delete error should be nil");
 }
-*/
+
 @end
