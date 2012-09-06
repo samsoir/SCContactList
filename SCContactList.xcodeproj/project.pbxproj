@@ -38,6 +38,7 @@
 		7B8A53E415F69081002FC2EE /* SCContactGroup.h in Headers */ = {isa = PBXBuildFile; fileRef = 7B7A921415E81B4600ED4325 /* SCContactGroup.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		7B8A53E515F69081002FC2EE /* SCContactPerson.h in Headers */ = {isa = PBXBuildFile; fileRef = 7B7A921615E81B4600ED4325 /* SCContactPerson.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		7B8A53E615F69081002FC2EE /* SCContactRecord.h in Headers */ = {isa = PBXBuildFile; fileRef = 7B7A921715E81B4600ED4325 /* SCContactRecord.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		7B8A540615F90F77002FC2EE /* SCContactAddressBook.m in Sources */ = {isa = PBXBuildFile; fileRef = 7BD9CC7C15B869C900D6DAA8 /* SCContactAddressBook.m */; };
 		7BBAEF2615BDAAEE005CEAEF /* SCContactPerson.m in Sources */ = {isa = PBXBuildFile; fileRef = 7BBAEF2515BDAAEE005CEAEF /* SCContactPerson.m */; };
 		7BBAEF2A15BDAB16005CEAEF /* SCContactPersonTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 7BBAEF2915BDAB16005CEAEF /* SCContactPersonTests.m */; };
 		7BBAEF2D15BDAB72005CEAEF /* SCContactPerson.m in Sources */ = {isa = PBXBuildFile; fileRef = 7BBAEF2515BDAAEE005CEAEF /* SCContactPerson.m */; };
@@ -447,6 +448,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7B8A540615F90F77002FC2EE /* SCContactAddressBook.m in Sources */,
 				7BD9CC8115B86A0000D6DAA8 /* SCContactListTests.m in Sources */,
 				7BD9CC8C15B8720100D6DAA8 /* SCContactGroup.m in Sources */,
 				7BD9CC8F15B89AB900D6DAA8 /* SCContactGroupTests.m in Sources */,
@@ -649,6 +651,7 @@
 				7B8A53EA15F69329002FC2EE /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		7BD9CC4015B7101B00D6DAA8 /* Build configuration list for PBXProject "SCContactList" */ = {
 			isa = XCConfigurationList;

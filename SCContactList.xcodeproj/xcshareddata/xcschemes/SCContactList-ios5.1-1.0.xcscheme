@@ -15,7 +15,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "7B8A53E715F69329002FC2EE"
-               BuildableName = "SCContactList-ios5.1-1.0"
+               BuildableName = "SCContactList-ios5.1-1.0.0"
                BlueprintName = "SCContactList-ios5.1-1.0.0"
                ReferencedContainer = "container:SCContactList.xcodeproj">
             </BuildableReference>
