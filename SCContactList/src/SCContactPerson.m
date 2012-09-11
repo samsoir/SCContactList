@@ -490,7 +490,7 @@
 {
     BOOL result                  = NO;
     NSError *createError         = nil;
-    ABAddressBookRef addressBook = ABAddressBookCreate();
+    ABAddressBookRef addressBook = SCAddressBookCreate(NULL, NULL);
     
     if (createError && error != NULL)
     {
@@ -536,7 +536,7 @@
 - (BOOL)readRecord:(ABRecordID)recordID error:(NSError **)error
 {
     BOOL result                  = NO;
-    ABAddressBookRef addressBook = ABAddressBookCreate();
+    ABAddressBookRef addressBook = SCAddressBookCreate(NULL, NULL);
     
     ABRecordRef record = [self addressBook:addressBook getABRecordWithID:recordID];
     
@@ -566,7 +566,7 @@
 {
     BOOL result                  = NO;
     NSError *updateError         = nil;
-    ABAddressBookRef addressBook = ABAddressBookCreate();
+    ABAddressBookRef addressBook = SCAddressBookCreate(NULL, NULL);
     
     NSLog(@"Update record id: %i", recordID);
     

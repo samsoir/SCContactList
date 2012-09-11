@@ -139,7 +139,7 @@
 {
     SCContactGroup *contactGroup = nil;
     
-    ABAddressBookRef addressBook = ABAddressBookCreate();
+    ABAddressBookRef addressBook = SCAddressBookCreate(NULL, NULL);
     CFArrayRef groups            = ABAddressBookCopyArrayOfAllGroups(addressBook);
     ABRecordID groupID           = [self findGroupIDByName:groupName
                                                    inArray:groups];
@@ -271,7 +271,7 @@
     
     if (self.ABRecordID > kABRecordInvalidID)
     {
-        ABAddressBookRef addressBook = ABAddressBookCreate();
+        ABAddressBookRef addressBook = SCAddressBookCreate(NULL, NULL);
         ABRecordRef groupRecordRef   = [self addressBook:addressBook getABRecordWithID:self.ABRecordID];
         
         NSArray *groupContacts = [(NSArray *)ABGroupCopyArrayOfAllMembers(groupRecordRef) autorelease];
@@ -401,7 +401,7 @@
 {
     BOOL result                  = NO;
     NSError *createError         = nil;
-    ABAddressBookRef addressBook = ABAddressBookCreate();
+    ABAddressBookRef addressBook = SCAddressBookCreate(NULL, NULL);
     
     if (createError && error != NULL)
     {
@@ -451,7 +451,7 @@
     
     NSError *readError = nil;
     
-    ABAddressBookRef addressBook = ABAddressBookCreate();
+    ABAddressBookRef addressBook = SCAddressBookCreate(NULL, NULL);
     
     if ( ! addressBook && error != NULL)
     {
@@ -492,7 +492,7 @@
 {
     BOOL result                  = NO;
     NSError *updateError         = nil;
-    ABAddressBookRef addressBook = ABAddressBookCreate();
+    ABAddressBookRef addressBook = SCAddressBookCreate(NULL, NULL);
     
     if (updateError && error != NULL)
     {

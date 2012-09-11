@@ -40,7 +40,7 @@
 - (BOOL)addressBookHasChanges
 {
     BOOL result = NO;
-    ABAddressBookRef addressBook = ABAddressBookCreate();
+    ABAddressBookRef addressBook = SCAddressBookCreate(NULL, NULL);
 
     result = ABAddressBookHasUnsavedChanges(addressBook);
     
@@ -51,7 +51,7 @@
 
 - (NSArray *)getAllContacts
 {
-    ABAddressBookRef addressBook  = ABAddressBookCreate();
+    ABAddressBookRef addressBook  = SCAddressBookCreate(NULL, NULL);
 
     NSArray *ABRecordArray        = [(NSArray *)ABAddressBookCopyArrayOfAllPeople(addressBook) autorelease];
     int contactCount              = [ABRecordArray count];
@@ -76,7 +76,7 @@
 
 - (NSArray *)getAllGroups
 {
-    ABAddressBookRef addressBook = ABAddressBookCreate();
+    ABAddressBookRef addressBook = SCAddressBookCreate(NULL, NULL);
     
     NSArray *ABRecordArray       = [(NSArray *)ABAddressBookCopyArrayOfAllGroups(addressBook) autorelease];
     int groupCount               = [ABRecordArray count];
@@ -110,7 +110,7 @@
         return YES;
     }
 
-    ABAddressBookRef addressBook = ABAddressBookCreate();
+    ABAddressBookRef addressBook = SCAddressBookCreate(NULL, NULL);
     CFErrorRef saveError         = NULL;
     result                       = ABAddressBookSave(addressBook, &saveError);
 
@@ -126,7 +126,7 @@
 
 - (void)revert
 {
-    ABAddressBookRef addressBook = ABAddressBookCreate();
+    ABAddressBookRef addressBook = SCAddressBookCreate(NULL, NULL);
     ABAddressBookRevert(addressBook);
     CFRelease(addressBook);
 }

@@ -214,7 +214,7 @@
         [addressBookRecords addObject:contactDict];
     }
     
-    ABAddressBookRef addressBook = ABAddressBookCreate();
+    ABAddressBookRef addressBook = SCAddressBookCreate(NULL, NULL);
     
     for (NSDictionary *contactDict in addressBookRecords)
     {
@@ -285,7 +285,7 @@
 
 - (void)tearDown
 {
-    ABAddressBookRef addressBook = ABAddressBookCreate();
+    ABAddressBookRef addressBook = SCAddressBookCreate(NULL, NULL);
     
     // Tear-down code here.
     CFArrayRef recordsInserted = ABAddressBookCopyArrayOfAllPeople(addressBook);
@@ -339,7 +339,7 @@
 {
     ABRecordRef subjectRecord = [self createTestAddressBookRecord];
     
-    ABAddressBookRef addressBook = ABAddressBookCreate();
+    ABAddressBookRef addressBook = SCAddressBookCreate(NULL, NULL);
     
     ABAddressBookAddRecord(addressBook, subjectRecord, NULL);
 
@@ -412,7 +412,7 @@
 
 - (void)testSave
 {
-    ABAddressBookRef addressBook = ABAddressBookCreate();
+    ABAddressBookRef addressBook = SCAddressBookCreate(NULL, NULL);
     ABRecordRef subjectRecord = [self createTestAddressBookRecord];
 
     CFErrorRef error = NULL;
@@ -462,7 +462,7 @@
     
     NSLog(@"Subject record saved: %i with ID: %i", [subject isSaved], subject.ABRecordID);
     
-    ABAddressBookRef secondAddressBook = ABAddressBookCreate();
+    ABAddressBookRef secondAddressBook = SCAddressBookCreate(NULL, NULL);
     
     ABRecordRef testSubjectRecord = ABAddressBookGetPersonWithRecordID(secondAddressBook, subject.ABRecordID);
     
@@ -493,7 +493,7 @@
 
 - (void)testDeleteRecordError
 {
-    ABAddressBookRef addressBook = ABAddressBookCreate();
+    ABAddressBookRef addressBook = SCAddressBookCreate(NULL, NULL);
     
     // Tear-down code here.
     NSArray *recordsInserted = [(NSArray *)ABAddressBookCopyArrayOfAllPeople(addressBook) autorelease];

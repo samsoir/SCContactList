@@ -257,7 +257,7 @@
         return YES;
     }
     
-    ABAddressBookRef addressBook = ABAddressBookCreate();
+    ABAddressBookRef addressBook = SCAddressBookCreate(NULL, NULL);
     ABRecordRef record           = [self addressBook:addressBook getABRecordWithID:recordID];
         
     if (record == NULL)

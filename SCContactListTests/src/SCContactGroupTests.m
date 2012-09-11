@@ -15,7 +15,7 @@
 {
     [super setUp];
 
-    ABAddressBookRef addressBook = ABAddressBookCreate();
+    ABAddressBookRef addressBook = SCAddressBookCreate(NULL, NULL);
     
     if (addressBook == NULL)
     {
@@ -59,7 +59,7 @@
 
 - (void)tearDown
 {
-    ABAddressBookRef addressBook = ABAddressBookCreate();
+    ABAddressBookRef addressBook = SCAddressBookCreate(NULL, NULL);
     CFArrayRef groups            = ABAddressBookCopyArrayOfAllGroups(addressBook);
     int groupsCount              = CFArrayGetCount(groups);
     
@@ -103,7 +103,7 @@
 {
     STAssertNotNil([SCContactGroup contactGroupWithID:kABRecordInvalidID], @"ContactGroupWithID should not be nil when bad ID supplied");
     
-    ABAddressBookRef addressBook = ABAddressBookCreate();
+    ABAddressBookRef addressBook = SCAddressBookCreate(NULL, NULL);
     CFArrayRef groups            = ABAddressBookCopyArrayOfAllGroups(addressBook);
     ABRecordRef group0           = CFArrayGetValueAtIndex(groups, 0);
     
@@ -120,7 +120,7 @@
 
 - (void)testGroupName
 {
-    ABAddressBookRef addressBook = ABAddressBookCreate();
+    ABAddressBookRef addressBook = SCAddressBookCreate(NULL, NULL);
     CFArrayRef groups            = ABAddressBookCopyArrayOfAllGroups(addressBook);
     ABRecordRef group0           = CFArrayGetValueAtIndex(groups, 0);
 
@@ -156,7 +156,7 @@
 
     STAssertFalse([newGroup isSaved], @"Group should be saved");
     
-    ABAddressBookRef addressBook = ABAddressBookCreate();
+    ABAddressBookRef addressBook = SCAddressBookCreate(NULL, NULL);
     CFArrayRef groups            = ABAddressBookCopyArrayOfAllGroups(addressBook);
     ABRecordRef group0           = CFArrayGetValueAtIndex(groups, 0);
         
@@ -221,7 +221,7 @@
     STAssertTrue([newGroup createRecord:newGroup.ABRecordID error:&saveError], @"Should be able to save a new group");
     STAssertNil(saveError, @"There should be no save error saving a new group");
     
-    ABAddressBookRef addressBook = ABAddressBookCreate();
+    ABAddressBookRef addressBook = SCAddressBookCreate(NULL, NULL);
     CFArrayRef groups            = ABAddressBookCopyArrayOfAllGroups(addressBook);
     int groupsCount              = CFArrayGetCount(groups);
     
@@ -252,7 +252,7 @@
 
 - (void)testDeleteRecordError
 {
-    ABAddressBookRef addressBook = ABAddressBookCreate();
+    ABAddressBookRef addressBook = SCAddressBookCreate(NULL, NULL);
     
     // Tear-down code here.
     NSArray *recordsInserted = [(NSArray *)ABAddressBookCopyArrayOfAllGroups(addressBook) autorelease];
@@ -294,7 +294,7 @@
     STAssertTrue([subject deleteRecord:subject.ABRecordID error:&deleteError], @"Deleting a valid model should return YES");
     STAssertNil(deleteError, @"Delete error should be nil");
     
-    ABAddressBookRef addressBook = ABAddressBookCreate();
+    ABAddressBookRef addressBook = SCAddressBookCreate(NULL, NULL);
     NSArray *groups = [(NSArray *)ABAddressBookCopyArrayOfAllGroups(addressBook) autorelease];
 
     int count = [groups count];
@@ -328,7 +328,7 @@
 
 - (void)testContactsLoadedOnExistingGroup
 {
-    ABAddressBookRef addressBook = ABAddressBookCreate();
+    ABAddressBookRef addressBook = SCAddressBookCreate(NULL, NULL);
     CFArrayRef groups            = ABAddressBookCopyArrayOfAllGroups(addressBook);
     int groupsCount              = CFArrayGetCount(groups);
 
@@ -369,7 +369,7 @@
 
 - (void)testContactsAddRecord
 {
-    ABAddressBookRef addressBook = ABAddressBookCreate();
+    ABAddressBookRef addressBook = SCAddressBookCreate(NULL, NULL);
     CFArrayRef groups            = ABAddressBookCopyArrayOfAllGroups(addressBook);
     int groupsCount              = CFArrayGetCount(groups);
     
@@ -417,7 +417,7 @@
 
 - (void)testContactsRemoveRecord
 {
-    ABAddressBookRef addressBook = ABAddressBookCreate();
+    ABAddressBookRef addressBook = SCAddressBookCreate(NULL, NULL);
     CFArrayRef groups            = ABAddressBookCopyArrayOfAllGroups(addressBook);
     int groupsCount              = CFArrayGetCount(groups);
     

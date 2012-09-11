@@ -51,7 +51,7 @@
         [addressBookRecords addObject:contactDict];
     }
     
-    ABAddressBookRef addressBook = ABAddressBookCreate();
+    ABAddressBookRef addressBook = SCAddressBookCreate(NULL, NULL);
        
     for (NSDictionary *contactDict in addressBookRecords)
     {
@@ -120,7 +120,7 @@
 
 - (void)tearDown
 {
-    ABAddressBookRef addressBook = ABAddressBookCreate();
+    ABAddressBookRef addressBook = SCAddressBookCreate(NULL, NULL);
 
     // Tear-down code here.
     CFArrayRef recordsInserted = ABAddressBookCopyArrayOfAllPeople(addressBook);
@@ -155,7 +155,7 @@
 
 - (void)testCreateAddressBookDatabaseInstance
 {
-    ABAddressBookRef addressBook = ABAddressBookCreate();
+    ABAddressBookRef addressBook = SCAddressBookCreate(NULL, NULL);
     
     STAssertTrue((addressBook != NULL), @"addressBook should not be NULL");
 }
