@@ -145,7 +145,14 @@
 {
     SCContactGroup *contactGroup = nil;
     
-    ABAddressBookRef addressBook = SCAddressBookCreate(NULL, NULL);
+    CFErrorRef addressBookError  = NULL;
+    ABAddressBookRef addressBook = SCAddressBookCreate(NULL, &addressBookError);
+    
+    if (addressBook == NULL || addressBookError != NULL)
+    {
+        return contactGroup;
+    }
+    
     CFArrayRef groups            = ABAddressBookCopyArrayOfAllGroups(addressBook);
     ABRecordID groupID           = [self findGroupIDByName:groupName
                                                    inArray:groups];
@@ -277,7 +284,19 @@
     
     if (self.ABRecordID > kABRecordInvalidID)
     {
-        ABAddressBookRef addressBook = SCAddressBookCreate(NULL, NULL);
+        CFErrorRef addressBookError  = NULL;
+        ABAddressBookRef addressBook = SCAddressBookCreate(NULL, &addressBookError);
+        
+        if (addressBook == NULL || addressBookError != NULL)
+        {
+            if (error != NULL)
+            {
+                *error = (NSError *)addressBookError;
+            }
+
+            return result;
+        }
+        
         ABRecordRef groupRecordRef   = [self addressBook:addressBook getABRecordWithID:self.ABRecordID];
         
         NSArray *groupContacts = [(NSArray *)ABGroupCopyArrayOfAllMembers(groupRecordRef) autorelease];
@@ -455,17 +474,16 @@
 {
     BOOL result = NO;
     
-    NSError *readError = nil;
+    CFErrorRef addressBookError  = NULL;
+    ABAddressBookRef addressBook = SCAddressBookCreate(NULL, &addressBookError);
     
-    ABAddressBookRef addressBook = SCAddressBookCreate(NULL, NULL);
-    
-    if ( ! addressBook && error != NULL)
+    if (addressBook == NULL || addressBookError != NULL)
     {
-        *error = readError;
-    }
-    
-    if ( ! addressBook)
-    {
+        if (error != NULL)
+        {
+            *error = (NSError *)addressBookError;
+        }
+
         return result;
     }
     
@@ -497,26 +515,23 @@
 - (BOOL)updateRecord:(ABRecordID)recordID error:(NSError **)error
 {
     BOOL result                  = NO;
-    NSError *updateError         = nil;
-    ABAddressBookRef addressBook = SCAddressBookCreate(NULL, NULL);
+    CFErrorRef addressBookError  = NULL;
+    ABAddressBookRef addressBook = SCAddressBookCreate(NULL, &addressBookError);
     
-    if (updateError && error != NULL)
+    if (addressBook == NULL || addressBookError != NULL)
     {
-        *error = updateError;
-    }
-    
-    if ( ! addressBook || updateError != nil)
-    {
+        if (error != NULL)
+        {
+            *error = (NSError *)addressBookError;
+        }
         return result;
     }
-    else
-    {
-        ABRecordRef record = [self addressBook:addressBook getABRecordWithID:self.ABRecordID];
-        
-        result = [self persistRecord:record
-                         addressBook:addressBook
-                               error:error];
-    }
+    
+    ABRecordRef record = [self addressBook:addressBook getABRecordWithID:self.ABRecordID];
+    
+    result = [self persistRecord:record
+                     addressBook:addressBook
+                           error:error];
     
     CFRelease(addressBook);
     

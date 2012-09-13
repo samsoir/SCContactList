@@ -489,16 +489,17 @@
 - (BOOL)createRecord:(ABRecordID)recordID error:(NSError **)error
 {
     BOOL result                  = NO;
-    NSError *createError         = nil;
-    ABAddressBookRef addressBook = SCAddressBookCreate(NULL, NULL);
+
+    CFErrorRef addressBookError  = NULL;
+    ABAddressBookRef addressBook = SCAddressBookCreate(NULL, &addressBookError);
     
-    if (createError && error != NULL)
+    if (addressBook == NULL || addressBookError != NULL)
     {
-        *error = createError;
-    }
-    
-    if ( ! addressBook || createError != nil)
-    {
+        if (error != NULL)
+        {
+            *error = (NSError *)addressBookError;
+        }
+        
         return result;
     }
     else
@@ -536,7 +537,19 @@
 - (BOOL)readRecord:(ABRecordID)recordID error:(NSError **)error
 {
     BOOL result                  = NO;
-    ABAddressBookRef addressBook = SCAddressBookCreate(NULL, NULL);
+
+    CFErrorRef addressBookError  = NULL;
+    ABAddressBookRef addressBook = SCAddressBookCreate(NULL, &addressBookError);
+    
+    if (addressBook == NULL || addressBookError != NULL)
+    {
+        if (error != NULL)
+        {
+            *error = (NSError *)addressBookError;
+        }
+        
+        return result;
+    }
     
     ABRecordRef record = [self addressBook:addressBook getABRecordWithID:recordID];
     
@@ -565,18 +578,16 @@
 - (BOOL)updateRecord:(ABRecordID)recordID error:(NSError **)error
 {
     BOOL result                  = NO;
-    NSError *updateError         = nil;
-    ABAddressBookRef addressBook = SCAddressBookCreate(NULL, NULL);
+    CFErrorRef addressBookError  = NULL;
+    ABAddressBookRef addressBook = SCAddressBookCreate(NULL, &addressBookError);
     
-    NSLog(@"Update record id: %i", recordID);
-    
-    if (updateError && error != NULL)
+    if (addressBook == NULL || addressBookError != NULL)
     {
-        *error = updateError;
-    }
-    
-    if ( ! addressBook || updateError != nil)
-    {
+        if (error != NULL)
+        {
+            *error = (NSError *)addressBookError;
+        }
+        
         return result;
     }
     else

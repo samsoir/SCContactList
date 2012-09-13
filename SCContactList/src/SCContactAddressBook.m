@@ -40,7 +40,13 @@
 - (BOOL)addressBookHasChanges
 {
     BOOL result = NO;
+
     ABAddressBookRef addressBook = SCAddressBookCreate(NULL, NULL);
+    
+    if (addressBook == NULL)
+    {
+        return result;
+    }
 
     result = ABAddressBookHasUnsavedChanges(addressBook);
     
@@ -51,7 +57,12 @@
 
 - (NSArray *)getAllContacts
 {
-    ABAddressBookRef addressBook  = SCAddressBookCreate(NULL, NULL);
+    ABAddressBookRef addressBook = SCAddressBookCreate(NULL, NULL);
+    
+    if (addressBook == NULL)
+    {
+        return nil;
+    }
 
     NSArray *ABRecordArray        = [(NSArray *)ABAddressBookCopyArrayOfAllPeople(addressBook) autorelease];
     int contactCount              = [ABRecordArray count];
@@ -77,6 +88,11 @@
 - (NSArray *)getAllGroups
 {
     ABAddressBookRef addressBook = SCAddressBookCreate(NULL, NULL);
+    
+    if (addressBook == NULL)
+    {
+        return nil;
+    }
     
     NSArray *ABRecordArray       = [(NSArray *)ABAddressBookCopyArrayOfAllGroups(addressBook) autorelease];
     int groupCount               = [ABRecordArray count];
@@ -110,13 +126,25 @@
         return YES;
     }
 
-    ABAddressBookRef addressBook = SCAddressBookCreate(NULL, NULL);
+    CFErrorRef addressBookError  = NULL;
+    ABAddressBookRef addressBook = SCAddressBookCreate(NULL, &addressBookError);
+    
+    if (addressBook == NULL || addressBookError != NULL)
+    {
+        if (error != NULL)
+        {
+            *error = (NSError *)addressBookError;
+        }
+        
+        return result;
+    }    
+    
     CFErrorRef saveError         = NULL;
     result                       = ABAddressBookSave(addressBook, &saveError);
 
     if ( ! result && (error != NULL))
     {
-        *error = [(NSError *)saveError autorelease];
+        *error = (NSError *)saveError;
     }
     
     CFRelease(addressBook);
@@ -127,6 +155,12 @@
 - (void)revert
 {
     ABAddressBookRef addressBook = SCAddressBookCreate(NULL, NULL);
+    
+    if (addressBook == NULL)
+    {
+        return;
+    }
+    
     ABAddressBookRevert(addressBook);
     CFRelease(addressBook);
 }

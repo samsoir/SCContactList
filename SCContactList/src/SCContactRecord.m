@@ -256,8 +256,20 @@
     {
         return YES;
     }
+
+    CFErrorRef addressBookError  = NULL;
+    ABAddressBookRef addressBook = SCAddressBookCreate(NULL, &addressBookError);
     
-    ABAddressBookRef addressBook = SCAddressBookCreate(NULL, NULL);
+    if (addressBook == NULL || addressBookError != NULL)
+    {
+        if (error != NULL)
+        {
+            *error = (NSError *)addressBookError;
+        }
+        
+        return result;
+    }
+    
     ABRecordRef record           = [self addressBook:addressBook getABRecordWithID:recordID];
         
     if (record == NULL)
