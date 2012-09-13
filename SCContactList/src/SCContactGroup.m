@@ -14,6 +14,12 @@
                         inArray:(CFArrayRef)array
 {
     ABRecordID groupID = kABRecordInvalidID;
+    
+    if (array == NULL)
+    {
+        return groupID;
+    }
+    
     int groupCount    = CFArrayGetCount(array);
     
     if (groupCount > 0)
@@ -283,7 +289,7 @@
         {
             ABRecordRef personRecordRef = [groupContacts objectAtIndex:i];
             
-            SCContactPerson *personRecord = [[SCContactPerson alloc] initWithABRecordID:kABRecordInvalidID];
+            SCContactPerson *personRecord = [[[SCContactPerson alloc] initWithABRecordID:kABRecordInvalidID] autorelease];
             
             NSError *readError = nil;
             
