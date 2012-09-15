@@ -86,7 +86,12 @@
 @property (nonatomic, readonly) NSDate            *creationDate;
 @property (nonatomic, readonly) NSDate            *modificationDate;
 
-#pragma mark - SCContactPerson lifecycle Methods
+#pragma mark - SCContactPerson Search Methods
+
++ (NSArray *)peopleWithName:(NSString *)name;
++ (NSArray *)allPeopleWithSortOrdering:(ABPersonSortOrdering)sortOrdering;
+
+#pragma mark - SCContactPerson Lifecycle Methods
 
 + (SCContactPerson *)contactPersonWithID:(ABRecordID)personID;
 

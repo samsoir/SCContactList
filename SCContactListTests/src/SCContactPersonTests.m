@@ -9,6 +9,8 @@
 #import "SCContactPersonTests.h"
 #import "SCContactList.h"
 
+static int kSCContactPersonTestsfixtureCount = 5;
+
 @implementation SCContactPersonTests
 
 @synthesize records = _records;
@@ -180,7 +182,7 @@
     // Set-up code here.
     [self tearDown];
     
-    int recordNumber                    = 5;
+    int recordNumber                    = kSCContactPersonTestsfixtureCount;
     NSMutableArray *addressBookRecords  = [NSMutableArray arrayWithCapacity:5];
     self.records                        = [NSMutableArray arrayWithCapacity:5];
     
@@ -533,6 +535,62 @@
     
     STAssertTrue([subject deleteRecord:subject.ABRecordID error:&deleteError], @"Deleting a valid model should return YES");
     STAssertNil(deleteError, @"Delete error should be nil");
+}
+
+- (void)testPeopleWithName
+{
+    NSString *searchTerm     = @"Jane";
+    
+    NSArray *foundPeople     = [SCContactPerson peopleWithName:searchTerm];
+    
+    STAssertNotNil(foundPeople, @"Found people should not be nil");
+    
+    int foundPeopleCount     = [foundPeople count];
+    
+    STAssertEquals(kSCContactPersonTestsfixtureCount, foundPeopleCount, @"Found people should contain %i records, found %i", kSCContactPersonTestsfixtureCount, foundPeopleCount);
+    
+    for (int i = 0; i < foundPeopleCount; i += 1)
+    {
+        id record = [foundPeople objectAtIndex:i];
+        
+        STAssertTrue([record isKindOfClass:[SCContactPerson class]], @"Record should be instance of SCContactPerson");
+    }
+    
+    searchTerm               = @"Jane2";
+    
+    foundPeople              = [SCContactPerson peopleWithName:searchTerm];
+    
+    STAssertNotNil(foundPeople, @"Found people should not be nil");
+
+    foundPeopleCount         = [foundPeople count];
+
+    STAssertEquals(1, foundPeopleCount, @"Found people should contain %i records, found %i", 5, foundPeopleCount);
+}
+
+- (void)testArrayOfAllPeople
+{
+    NSArray *allPeople = [SCContactPerson allPeopleWithSortOrdering:kABPersonSortByFirstName];
+    
+    int allPeopleCount = [allPeople count];
+    
+    STAssertNotNil(allPeople, @"allPeople should not be nil");
+    STAssertEquals(kSCContactPersonTestsfixtureCount, allPeopleCount, @"allPeople should contain %i records, got: %i", kSCContactPersonTestsfixtureCount, allPeopleCount);
+    
+    SCContactPerson *firstRecord = [allPeople objectAtIndex:0];
+    SCContactPerson *lastRecord  = [allPeople objectAtIndex:4];
+    
+    STAssertTrue([firstRecord.firstName isEqualToString:@"Jane0"], @"allPeople should be sorted by first name, first record was %@", firstRecord);
+    STAssertTrue([lastRecord.firstName isEqualToString:@"Jane4"], @"allPeople should be sorted by first name, last record was %@", lastRecord);
+ 
+
+    allPeople      = [SCContactPerson allPeopleWithSortOrdering:kABPersonSortByLastName];
+    allPeopleCount = [allPeople count];
+
+    firstRecord = [allPeople objectAtIndex:0];
+    lastRecord  = [allPeople objectAtIndex:4];
+
+    STAssertTrue([firstRecord.lastName isEqualToString:@"Smith0"], @"allPeople should be sorted by last name, first record was %@", firstRecord.firstName);
+    STAssertTrue([lastRecord.lastName isEqualToString:@"Smith4"], @"allPeople should be sorted by last name, last record was %@", lastRecord.firstName);
 }
 
 @end

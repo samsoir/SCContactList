@@ -8,32 +8,57 @@
 
 #import "SCContactList.h"
 
+NSString *const SCContactAddressBookAuthorizationNotification = @"com.sittercity.SCContactList:SCContactAddressBookAuthorizationNotification";
+
 @implementation SCContactAddressBook
 
-+ (SCContactAddressBook *)currentList
+#pragma mark - AddressBook Access
+
+- (void)requestAddressBookAuthorization:(void (^)(BOOL granted, NSError *error))completionHandler
 {
-    static SCContactAddressBook *list = nil;
-
-    if (list == nil)
+    if (ABAddressBookRequestAccessWithCompletion == NULL)
     {
-        list = [[SCContactAddressBook alloc] init];
-    }
-
-    return list;
-}
-
-
-- (id)init
-{
-    self = [super init];
-    
-    if (self)
-    {
-
+        completionHandler(YES, nil);
     }
     
-    return self;
+    ABAddressBookRef addressBook = SCAddressBookCreate(NULL, NULL);
+    
+    ABAddressBookRequestAccessWithCompletion(addressBook, ^(bool granted, CFErrorRef error) {
+        completionHandler((BOOL)granted, (NSError *)error);
+    });
+    
+    CFRelease(addressBook);
 }
+
+- (SCContactListAuthorizationStatus)addressBookAuthorizationStatus
+{
+    if (ABAddressBookGetAuthorizationStatus == NULL)
+    {
+        return kSCContactListAuthorizationStatusAuthorized;
+    }
+    
+    ABAuthorizationStatus authStatus        = ABAddressBookGetAuthorizationStatus();
+    SCContactListAuthorizationStatus status = kSCContactListAuthorizationStatusNotDetermined;
+    
+    switch (authStatus)
+    {
+        case kABAuthorizationStatusAuthorized:
+            status = kSCContactListAuthorizationStatusAuthorized;
+            break;
+        case kABAuthorizationStatusDenied:
+            status = kSCContactListAuthorizationStatusDenied;
+            break;
+        case kABAuthorizationStatusNotDetermined:
+            status = kSCContactListAuthorizationStatusNotDetermined;
+            break;
+        case kABAuthorizationStatusRestricted:
+            status = kSCContactListAuthorizationStatusRestricted;
+            break;            
+    }
+
+    return status;
+}
+
 
 #pragma mark - Interrogation Methods
 

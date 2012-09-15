@@ -181,7 +181,79 @@
 @synthesize creationDate       = _creationDate;
 @synthesize modificationDate   = _modificationDate;
 
-#pragma mark - SCContactPerson lifecycle methods
+#pragma mark - SCContactPerson Search Methods
+
++ (NSArray *)peopleWithName:(NSString *)name
+{
+    NSMutableArray *searchResults = nil;
+    ABAddressBookRef addressBook  = SCAddressBookCreate(NULL, NULL);
+
+    if (addressBook)
+    {
+        CFArrayRef unformattedSearchResults = ABAddressBookCopyPeopleWithName(addressBook, (CFStringRef)name);
+        int count                           = CFArrayGetCount(unformattedSearchResults);
+        
+        if (count > 0)
+        {
+            searchResults = [NSMutableArray arrayWithCapacity:count];
+            
+            for (int i = 0; i < count; i += 1)
+            {
+                ABRecordRef record = CFArrayGetValueAtIndex(unformattedSearchResults, i);
+                
+                SCContactPerson *personRecord = [[[SCContactPerson alloc] initWithABRecordID:kABRecordInvalidID] autorelease];
+                [personRecord readFromRecordRef:record error:nil];
+                [searchResults addObject:personRecord];
+            }
+        }        
+    }
+    
+    return searchResults;
+}
+
++ (NSArray *)allPeopleWithSortOrdering:(ABPersonSortOrdering)sortOrdering
+{
+    NSMutableArray *allPeople     = nil;
+    ABAddressBookRef addressBook  = SCAddressBookCreate(NULL, NULL);
+
+    if (addressBook)
+    {
+        CFArrayRef unformattedSearchResults = ABAddressBookCopyArrayOfAllPeople(addressBook);
+        int count                           = CFArrayGetCount(unformattedSearchResults);
+
+        if (count > 0)
+        {
+            allPeople  = [NSMutableArray arrayWithCapacity:count];
+            
+            for (int i = 0; i < count; i += 1)
+            {
+                ABRecordRef record = CFArrayGetValueAtIndex(unformattedSearchResults, i);
+                
+                SCContactPerson *personRecord = [[[SCContactPerson alloc] initWithABRecordID:kABRecordInvalidID] autorelease];
+                [personRecord readFromRecordRef:record error:nil];
+                [allPeople addObject:personRecord];
+            }
+                        
+            __block int sortOrderingForBlock = sortOrdering;
+            
+            [allPeople sortUsingComparator:^NSComparisonResult(SCContactPerson *person1, SCContactPerson *person2) {
+                
+                SEL getter = (sortOrderingForBlock == kABPersonSortByFirstName) ? @selector(firstName) : @selector(lastName);
+
+                NSString *person1Name = [person1 performSelector:getter];
+                NSString *person2Name = [person2 performSelector:getter];
+
+                NSComparisonResult result = [person1Name localizedCaseInsensitiveCompare:person2Name];
+                
+                return result;
+            }];            
+        }
+    }
+    
+    return allPeople;
+}
+
+#pragma mark - SCContactPerson Lifecycle Methods
 
 + (SCContactPerson *)contactPersonWithID:(ABRecordID)personID
 {

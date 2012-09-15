@@ -7,15 +7,15 @@
 	objects = {
 
 /* Begin PBXAggregateTarget section */
-		7B8A53E715F69329002FC2EE /* SCContactList-ios5.1-1.0.0 */ = {
+		7B8A53E715F69329002FC2EE /* SCContactList-1.0.0 */ = {
 			isa = PBXAggregateTarget;
-			buildConfigurationList = 7B8A53E815F69329002FC2EE /* Build configuration list for PBXAggregateTarget "SCContactList-ios5.1-1.0.0" */;
+			buildConfigurationList = 7B8A53E815F69329002FC2EE /* Build configuration list for PBXAggregateTarget "SCContactList-1.0.0" */;
 			buildPhases = (
 				7B8A53EF15F6934F002FC2EE /* ShellScript */,
 			);
 			dependencies = (
 			);
-			name = "SCContactList-ios5.1-1.0.0";
+			name = "SCContactList-1.0.0";
 			productName = "SCContactList-ios5.1-1.0";
 		};
 /* End PBXAggregateTarget section */
@@ -376,7 +376,7 @@
 				7BD9CC4515B7101B00D6DAA8 /* SCContactList */,
 				7B8A53C615F68F1E002FC2EE /* SCContactListSimulator */,
 				7BD9CC5615B7101B00D6DAA8 /* SCContactListTests */,
-				7B8A53E715F69329002FC2EE /* SCContactList-ios5.1-1.0.0 */,
+				7B8A53E715F69329002FC2EE /* SCContactList-1.0.0 */,
 			);
 		};
 /* End PBXProject section */
@@ -404,7 +404,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "UNIVERSAL_LIBRARY_PRODUCT_NAME=\"${BUILT_PRODUCTS_DIR}/libSCContactList-ios5.1-1.0.0.a\"\nPRODUCT_LIBRARY_RESOURCE=\"${SRCROOT}/lib\"\n\nrm -rf $UNIVERSAL_LIBRARY_PRODUCT_NAME\n\nlipo -create \"${BUILT_PRODUCTS_DIR}/../${CONFIGURATION}-iphonesimulator/libSCContactListSimulator.a\" \"${BUILT_PRODUCTS_DIR}/libSCContactList-armv7.a\" -output \"${UNIVERSAL_LIBRARY_PRODUCT_NAME}\"\n\ncp $UNIVERSAL_LIBRARY_PRODUCT_NAME ${PRODUCT_LIBRARY_RESOURCE}\ncp -R \"${BUILT_PRODUCTS_DIR}/include\" \"${PRODUCT_LIBRARY_RESOURCE}\"";
+			shellScript = "UNIVERSAL_LIBRARY_PRODUCT_NAME=\"${BUILT_PRODUCTS_DIR}/libSCContactList-1.0.0.a\"\nPRODUCT_LIBRARY_RESOURCE=\"${SRCROOT}/lib\"\n\nrm -rf $UNIVERSAL_LIBRARY_PRODUCT_NAME\n\nlipo -create \"${BUILT_PRODUCTS_DIR}/../${CONFIGURATION}-iphonesimulator/libSCContactListSimulator.a\" \"${BUILT_PRODUCTS_DIR}/libSCContactList-armv7.a\" -output \"${UNIVERSAL_LIBRARY_PRODUCT_NAME}\"\n\ncp $UNIVERSAL_LIBRARY_PRODUCT_NAME ${PRODUCT_LIBRARY_RESOURCE}\ncp -R \"${BUILT_PRODUCTS_DIR}/include\" \"${PRODUCT_LIBRARY_RESOURCE}\"";
 		};
 		7BD9CC5515B7101B00D6DAA8 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -644,7 +644,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		7B8A53E815F69329002FC2EE /* Build configuration list for PBXAggregateTarget "SCContactList-ios5.1-1.0.0" */ = {
+		7B8A53E815F69329002FC2EE /* Build configuration list for PBXAggregateTarget "SCContactList-1.0.0" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				7B8A53E915F69329002FC2EE /* Debug */,

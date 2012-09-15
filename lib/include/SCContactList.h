@@ -10,7 +10,7 @@
 #define SCContactList_Header_h
 #import <AddressBook/AddressBook.h>
 
-#ifndef SCAddressBookCreateWithOptions
+#ifndef ABAddressBookCreateWithOptions
 #define SCAddressBookCreate(options, error) ABAddressBookCreate()
 #else
 #define SCAddressBookCreate(options, error) ABAddressBookCreateWithOptions(options, error)

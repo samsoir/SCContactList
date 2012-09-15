@@ -14,13 +14,28 @@
 #define __SCContactAddressBook__
 
 #define kSCContactListContactPersonBuffer 10
-#define kSCContactListContactGroupBuffer 10
+#define kSCContactListContactGroupBuffer  10
 
 #endif
 
+typedef CF_ENUM(CFIndex, SCContactListAuthorizationStatus) {
+    kSCContactListAuthorizationStatusNotDetermined = 0,
+    kSCContactListAuthorizationStatusRestricted,
+    kSCContactListAuthorizationStatusDenied,
+    kSCContactListAuthorizationStatusAuthorized
+};
+
+extern NSString *const SCContactAddressBookAuthorizationNotification;
+
 @interface SCContactAddressBook : NSObject
 
+#pragma mark - AddressBook Access
+
+- (void)requestAddressBookAuthorization:(void (^)(BOOL granted, NSError *error))completionHandler;
+- (SCContactListAuthorizationStatus)addressBookAuthorizationStatus;
+
 #pragma mark - Interrogation Methods
+
 - (BOOL)addressBookHasChanges;
 
 - (NSArray *)getAllContacts;
