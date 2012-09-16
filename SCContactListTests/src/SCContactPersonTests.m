@@ -462,15 +462,10 @@ static int kSCContactPersonTestsfixtureCount = 5;
     
     STAssertTrue([subject updateRecord:subject.ABRecordID error:nil], @"Save record should be TRUE");
     
-    NSLog(@"Subject record saved: %i with ID: %i", [subject isSaved], subject.ABRecordID);
-    
     ABAddressBookRef secondAddressBook = SCAddressBookCreate(NULL, NULL);
     
     ABRecordRef testSubjectRecord = ABAddressBookGetPersonWithRecordID(secondAddressBook, subject.ABRecordID);
-    
-    NSLog(@"testSubjectID: %i", ABRecordGetRecordID(testSubjectRecord));
-    NSLog(@"testSubject First Name: %@", [(NSString *)ABRecordCopyValue(testSubjectRecord, kABPersonFirstNameProperty) autorelease]);
-    
+        
     NSString *savedFirstName  = [(NSString *)ABRecordCopyValue(testSubjectRecord, kABPersonFirstNameProperty) autorelease];
     NSString *savedLastName   = [(NSString *)ABRecordCopyValue(testSubjectRecord, kABPersonLastNameProperty) autorelease];
     NSString *savedMiddleName = [(NSString *)ABRecordCopyValue(testSubjectRecord, kABPersonMiddleNameProperty) autorelease];
