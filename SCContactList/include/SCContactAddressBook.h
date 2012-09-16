@@ -18,12 +18,12 @@
 
 #endif
 
-typedef CF_ENUM(CFIndex, SCContactListAuthorizationStatus) {
+typedef enum CFIndex {
     kSCContactListAuthorizationStatusNotDetermined = 0,
     kSCContactListAuthorizationStatusRestricted,
     kSCContactListAuthorizationStatusDenied,
     kSCContactListAuthorizationStatusAuthorized
-};
+} SCContactListAuthorizationStatus;
 
 extern NSString *const SCContactAddressBookAuthorizationNotification;
 
