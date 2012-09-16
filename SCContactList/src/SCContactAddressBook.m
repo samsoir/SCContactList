@@ -16,10 +16,10 @@ NSString *const SCContactAddressBookAuthorizationNotification = @"com.sittercity
 
 + (void)requestAddressBookAuthorization:(void (^)(BOOL granted, NSError *error))completionHandler
 {
-    if (ABAddressBookRequestAccessWithCompletion == NULL)
-    {
-        completionHandler(YES, nil);
-    }
+#ifndef ABAddressBookRequestAccessWithCompletion
+    completionHandler(YES, nil);
+    return;
+#else
     
     ABAddressBookRef addressBook = SCAddressBookCreate(NULL, NULL);
     
@@ -28,17 +28,17 @@ NSString *const SCContactAddressBookAuthorizationNotification = @"com.sittercity
     });
     
     CFRelease(addressBook);
+#endif
 }
 
 + (SCContactListAuthorizationStatus)addressBookAuthorizationStatus
 {
-    if (ABAddressBookGetAuthorizationStatus == NULL)
-    {
-        return kSCContactListAuthorizationStatusAuthorized;
-    }
-    
-    ABAuthorizationStatus authStatus        = ABAddressBookGetAuthorizationStatus();
     SCContactListAuthorizationStatus status = kSCContactListAuthorizationStatusNotDetermined;
+
+#ifndef ABAddressBookGetAuthorizationStatus
+    status = kSCContactListAuthorizationStatusAuthorized;
+#else
+    ABAuthorizationStatus authStatus        = ABAddressBookGetAuthorizationStatus();
     
     switch (authStatus)
     {
@@ -53,8 +53,9 @@ NSString *const SCContactAddressBookAuthorizationNotification = @"com.sittercity
             break;
         case kABAuthorizationStatusRestricted:
             status = kSCContactListAuthorizationStatusRestricted;
-            break;            
+            break;
     }
+#endif
 
     return status;
 }
