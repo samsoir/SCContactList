@@ -14,7 +14,7 @@ NSString *const SCContactAddressBookAuthorizationNotification = @"com.sittercity
 
 #pragma mark - AddressBook Access
 
-- (void)requestAddressBookAuthorization:(void (^)(BOOL granted, NSError *error))completionHandler
++ (void)requestAddressBookAuthorization:(void (^)(BOOL granted, NSError *error))completionHandler
 {
     if (ABAddressBookRequestAccessWithCompletion == NULL)
     {
@@ -30,7 +30,7 @@ NSString *const SCContactAddressBookAuthorizationNotification = @"com.sittercity
     CFRelease(addressBook);
 }
 
-- (SCContactListAuthorizationStatus)addressBookAuthorizationStatus
++ (SCContactListAuthorizationStatus)addressBookAuthorizationStatus
 {
     if (ABAddressBookGetAuthorizationStatus == NULL)
     {

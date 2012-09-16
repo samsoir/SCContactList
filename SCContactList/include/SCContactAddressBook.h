@@ -31,8 +31,8 @@ extern NSString *const SCContactAddressBookAuthorizationNotification;
 
 #pragma mark - AddressBook Access
 
-- (void)requestAddressBookAuthorization:(void (^)(BOOL granted, NSError *error))completionHandler;
-- (SCContactListAuthorizationStatus)addressBookAuthorizationStatus;
++ (void)requestAddressBookAuthorization:(void (^)(BOOL granted, NSError *error))completionHandler;
++ (SCContactListAuthorizationStatus)addressBookAuthorizationStatus;
 
 #pragma mark - Interrogation Methods
 

@@ -18,14 +18,21 @@
 
 #endif
 
+typedef CF_ENUM(CFIndex, SCContactListAuthorizationStatus) {
+    kSCContactListAuthorizationStatusNotDetermined = 0,
+    kSCContactListAuthorizationStatusRestricted,
+    kSCContactListAuthorizationStatusDenied,
+    kSCContactListAuthorizationStatusAuthorized
+};
+
 extern NSString *const SCContactAddressBookAuthorizationNotification;
 
 @interface SCContactAddressBook : NSObject
 
 #pragma mark - AddressBook Access
 
-- (void)requestAddressBookAuthorization:(void (^)(BOOL granted, NSError *error))completionHandler;
-- (ABAuthorizationStatus)addressBookAuthorizationStatus;
++ (void)requestAddressBookAuthorization:(void (^)(BOOL granted, NSError *error))completionHandler;
++ (SCContactListAuthorizationStatus)addressBookAuthorizationStatus;
 
 #pragma mark - Interrogation Methods
 
