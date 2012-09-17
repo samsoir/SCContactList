@@ -192,8 +192,6 @@
             }            
         }
     }
-
-    NSLog(@"Contact Group initiated: %@", self);
     
     return self;
 }
