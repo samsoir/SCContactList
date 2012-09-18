@@ -422,8 +422,6 @@
         id value                = [change valueForKey:NSKeyValueChangeNewKey];
         ABPropertyType type     = ABPersonGetTypeOfProperty(propertyID);
         
-        NSLog(@"Decorating property: %i with value: %@", propertyID, value);
-        
         if (value == nil)
         {
             CFErrorRef removeValueError = NULL;
@@ -468,6 +466,21 @@
                     return result;
                 }
             }
+        }
+    }
+    
+    if (self.image != nil)
+    {
+        CFErrorRef setImageError = NULL;
+        
+        if ( ! ABPersonSetImageData(record, (CFDataRef)self.image, &setImageError))
+        {
+            if (error != NULL)
+            {
+                *error = (NSError *)setImageError;
+            }
+            
+            return result;
         }
     }
     

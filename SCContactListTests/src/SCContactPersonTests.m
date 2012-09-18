@@ -83,6 +83,22 @@ static int kSCContactPersonTestsfixtureCount = 5;
     return @"+441206337343";
 }
 
+- (NSDictionary *)fixtureForFacebook
+{
+    return [NSDictionary dictionaryWithObjectsAndKeys:
+            @"test.user", (NSString *)kABPersonSocialProfileUsernameKey,
+            (NSString *)kABPersonSocialProfileServiceFacebook, (NSString *)kABPersonSocialProfileServiceKey
+            , nil];
+}
+
+- (NSDictionary *)fixtureForTwitter
+{
+    return [NSDictionary dictionaryWithObjectsAndKeys:
+            @"T3stusr", (NSString *)kABPersonSocialProfileUsernameKey,
+            (NSString *)kABPersonSocialProfileServiceTwitter, (NSString *)kABPersonSocialProfileServiceKey
+            , nil];
+}
+
 - (ABRecordRef)createTestAddressBookRecord
 {
     ABRecordRef subjectRecord = ABPersonCreate();
@@ -135,6 +151,21 @@ static int kSCContactPersonTestsfixtureCount = 5;
     if ( ! ABRecordSetValue(subjectRecord, kABPersonPhoneProperty, phoneValue, &phoneSetError))
     {
         STFail(@"Unable to set phone value with error: %@", phoneSetError);
+    }
+    
+    NSDictionary *facebook = [self fixtureForFacebook];
+    NSDictionary *twitter  = [self fixtureForTwitter];
+    
+    ABMutableMultiValueRef socialValue = ABMultiValueCreateMutable(kABPersonSocialProfileProperty);
+    
+    ABMultiValueInsertValueAndLabelAtIndex(socialValue, facebook, kABPersonSocialProfileServiceFacebook, 0, NULL);
+    ABMultiValueInsertValueAndLabelAtIndex(socialValue, twitter, kABPersonSocialProfileServiceTwitter, 1, NULL);
+
+    CFErrorRef socialSetError = NULL;
+    
+    if ( ! ABRecordSetValue(subjectRecord, kABPersonSocialProfileProperty, socialValue, &socialSetError))
+    {
+        STFail(@"Unable to set social value with error: %@", socialSetError);
     }
     
     ABPropertyID personalProperties[] = {
@@ -586,6 +617,18 @@ static int kSCContactPersonTestsfixtureCount = 5;
 
     STAssertTrue([firstRecord.lastName isEqualToString:@"Smith0"], @"allPeople should be sorted by last name, first record was %@", firstRecord.firstName);
     STAssertTrue([lastRecord.lastName isEqualToString:@"Smith4"], @"allPeople should be sorted by last name, last record was %@", lastRecord.firstName);
+}
+
+- (void)testCreateMultiValueForPropertyWithDictionary
+{
+    NSDictionary *dictionary    = [NSDictionary dictionaryWithObject:@"test.user" forKey:(NSString *)kABPersonSocialProfileServiceFacebook];
+    ABPropertyType propertyType = kABMultiStringPropertyType;
+    
+    SCContactPerson *subject = [[[SCContactPerson alloc] initWithABRecordID:kABRecordInvalidID] autorelease];
+    
+    ABMutableMultiValueRef result = [subject createMultiValueForProperty:propertyType withDictionary:dictionary];
+    
+    STAssertNotNil(result, @"Result should not be nil");
 }
 
 @end
