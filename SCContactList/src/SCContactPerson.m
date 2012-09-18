@@ -205,8 +205,12 @@
                 [personRecord readFromRecordRef:record error:nil];
                 [searchResults addObject:personRecord];
             }
-        }        
+        }
+        
+        CFRelease(unformattedSearchResults);
+        CFRelease(addressBook);
     }
+    
     
     return searchResults;
 }
@@ -248,6 +252,9 @@
                 return result;
             }];            
         }
+        
+        CFRelease(unformattedSearchResults);
+        CFRelease(addressBook);
     }
     
     return allPeople;

@@ -189,23 +189,42 @@
         return dictionary;
     }
     
-    NSArray *propertyArray = [(NSArray *)ABMultiValueCopyArrayOfAllValues(propertyMultiValue) autorelease];
-    int arrayCount         = [propertyArray count];
-    NSMutableArray *keys   = [NSMutableArray arrayWithCapacity:arrayCount];
+    NSMutableArray *propertyArray = [[[(NSArray *)ABMultiValueCopyArrayOfAllValues(propertyMultiValue) autorelease] mutableCopy] autorelease];
+    int arrayCount                = [propertyArray count];
+    NSMutableArray *keys          = [NSMutableArray arrayWithCapacity:arrayCount];
     
     for (int i = 0; i < arrayCount; i += 1)
     {
         if (propertyMultiValue != NULL)
         {
             NSString *arrayKey = [(NSString *)ABMultiValueCopyLabelAtIndex(propertyMultiValue, i) autorelease];
-            [keys addObject:arrayKey];
+            
+            if (arrayKey != nil)
+            {
+                [keys addObject:arrayKey];                
+            }
+            else
+            {
+                if (i < [propertyArray count])
+                {
+                    [propertyArray removeObjectAtIndex:i];                    
+                }
+            }
         }
     }
     
     CFRelease(propertyMultiValue);
     
-    dictionary = [NSMutableDictionary dictionaryWithObjects:propertyArray
-                                                    forKeys:keys];
+    // Sanity check
+    if ([propertyArray count] == [keys count])
+    {
+        dictionary = [NSMutableDictionary dictionaryWithObjects:propertyArray
+                                                        forKeys:keys];
+    }
+    else
+    {
+        dictionary = [NSMutableDictionary dictionaryWithCapacity:1];
+    }
     
     return dictionary;
 }

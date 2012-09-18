@@ -404,7 +404,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "UNIVERSAL_LIBRARY_PRODUCT_NAME=\"${BUILT_PRODUCTS_DIR}/libSCContactList-1.0.0.a\"\nPRODUCT_LIBRARY_RESOURCE=\"${SRCROOT}/lib\"\n\nrm -rf $UNIVERSAL_LIBRARY_PRODUCT_NAME\n\nlipo -create \"${BUILT_PRODUCTS_DIR}/../${CONFIGURATION}-iphonesimulator/libSCContactListSimulator.a\" \"${BUILT_PRODUCTS_DIR}/libSCContactList-armv7.a\" -output \"${UNIVERSAL_LIBRARY_PRODUCT_NAME}\"\n\ncp $UNIVERSAL_LIBRARY_PRODUCT_NAME ${PRODUCT_LIBRARY_RESOURCE}\ncp -R \"${BUILT_PRODUCTS_DIR}/include\" \"${PRODUCT_LIBRARY_RESOURCE}\"";
+			shellScript = "UNIVERSAL_LIBRARY_PRODUCT_NAME=\"${BUILT_PRODUCTS_DIR}/libSCContactList-1.0.0.a\"\nPRODUCT_LIBRARY_RESOURCE=\"${SRCROOT}/lib\"\n\nrm -rf $UNIVERSAL_LIBRARY_PRODUCT_NAME\n\nlipo -create \"${BUILT_PRODUCTS_DIR}/../${CONFIGURATION}-iphonesimulator/libSCContactListSimulator.a\" \"${BUILT_PRODUCTS_DIR}/libSCContactList-${CURRENT_ARCH}.a\" -output \"${UNIVERSAL_LIBRARY_PRODUCT_NAME}\"\n\ncp $UNIVERSAL_LIBRARY_PRODUCT_NAME ${PRODUCT_LIBRARY_RESOURCE}\ncp -R \"${BUILT_PRODUCTS_DIR}/include\" \"${PRODUCT_LIBRARY_RESOURCE}\"";
 		};
 		7BD9CC5515B7101B00D6DAA8 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
