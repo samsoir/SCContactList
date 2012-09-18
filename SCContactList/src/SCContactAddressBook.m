@@ -16,55 +16,49 @@ NSString *const SCContactAddressBookAuthorizationNotification = @"com.sittercity
 
 + (void)requestAddressBookAuthorization:(void (^)(BOOL granted, NSError *error))completionHandler
 {
-    if (ABAddressBookGetAuthorizationStatus == NULL)
-    {
-        NSLog(@"iOS 5.1 Api detected");
-        completionHandler(YES, nil);
-        return;
-    }
-    else
-    {
-        NSLog(@"iOS 6.0 Api detected");
-        ABAddressBookRef addressBook = SCAddressBookCreate(NULL, NULL);
-        
-        ABAddressBookRequestAccessWithCompletion(addressBook, ^(bool granted, CFErrorRef error) {
-            completionHandler((BOOL)granted, (NSError *)error);
-        });
-        
-        CFRelease(addressBook);
-    }
+#ifndef SCContactListAuthorizationStatus
+    NSLog(@"iOS 5.1 Api detected");
+    completionHandler(YES, nil);
+    return;
+#else
+    NSLog(@"iOS 6.0 Api detected");
+    ABAddressBookRef addressBook = SCAddressBookCreate(NULL, NULL);
+    
+    ABAddressBookRequestAccessWithCompletion(addressBook, ^(bool granted, CFErrorRef error) {
+        completionHandler((BOOL)granted, (NSError *)error);
+    });
+    
+    CFRelease(addressBook);
+#endif
 }
 
 + (SCContactListAuthorizationStatus)addressBookAuthorizationStatus
 {
     SCContactListAuthorizationStatus status = kSCContactListAuthorizationStatusNotDetermined;
 
-    if (ABAddressBookGetAuthorizationStatus == NULL)
+#ifndef SCContactListAuthorizationStatus
+    NSLog(@"iOS 5.1 Api detected");
+    status = kSCContactListAuthorizationStatusAuthorized;
+#else
+    NSLog(@"iOS 6.0 Api detected");
+    ABAuthorizationStatus authStatus        = ABAddressBookGetAuthorizationStatus();
+    
+    switch (authStatus)
     {
-        NSLog(@"iOS 5.1 Api detected");
-        status = kSCContactListAuthorizationStatusAuthorized;
+        case kABAuthorizationStatusAuthorized:
+            status = kSCContactListAuthorizationStatusAuthorized;
+            break;
+        case kABAuthorizationStatusDenied:
+            status = kSCContactListAuthorizationStatusDenied;
+            break;
+        case kABAuthorizationStatusNotDetermined:
+            status = kSCContactListAuthorizationStatusNotDetermined;
+            break;
+        case kABAuthorizationStatusRestricted:
+            status = kSCContactListAuthorizationStatusRestricted;
+            break;
     }
-    else
-    {
-        NSLog(@"iOS 6.0 Api detected");
-        ABAuthorizationStatus authStatus        = ABAddressBookGetAuthorizationStatus();
-        
-        switch (authStatus)
-        {
-            case kABAuthorizationStatusAuthorized:
-                status = kSCContactListAuthorizationStatusAuthorized;
-                break;
-            case kABAuthorizationStatusDenied:
-                status = kSCContactListAuthorizationStatusDenied;
-                break;
-            case kABAuthorizationStatusNotDetermined:
-                status = kSCContactListAuthorizationStatusNotDetermined;
-                break;
-            case kABAuthorizationStatusRestricted:
-                status = kSCContactListAuthorizationStatusRestricted;
-                break;
-        }
-    }
+#endif
 
     return status;
 }
