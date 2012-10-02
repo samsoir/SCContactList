@@ -83,6 +83,11 @@ static int kSCContactPersonTestsfixtureCount = 5;
     return @"+441206337343";
 }
 
+- (NSString *)fixtureForOrganization
+{
+    return @"Acme Inc.";
+}
+
 - (NSDictionary *)fixtureForFacebook
 {
     return [NSDictionary dictionaryWithObjectsAndKeys:
@@ -135,6 +140,14 @@ static int kSCContactPersonTestsfixtureCount = 5;
         STFail(@"Unable to set email address value with error: %@", emailSetError);
     }
     
+    // Create an organization
+    NSString *organization = [self fixtureForOrganization];
+    
+    if ( ! ABRecordSetValue(subjectRecord, kABPersonOrganizationProperty, organization, NULL))
+    {
+        STFail(@"Unable to create organization value");
+    }
+    
     // Create a couple of phone numbers
     NSString *phoneMain = [self fixtureMainPhone];
     NSString *iphone    = [self fixtureIPhone];
@@ -152,7 +165,7 @@ static int kSCContactPersonTestsfixtureCount = 5;
     {
         STFail(@"Unable to set phone value with error: %@", phoneSetError);
     }
-    
+        
     NSDictionary *facebook = [self fixtureForFacebook];
     NSDictionary *twitter  = [self fixtureForTwitter];
     
@@ -475,6 +488,7 @@ static int kSCContactPersonTestsfixtureCount = 5;
     NSString *newLastName   = @"Clark";
     NSString *newMiddleName = @"John";
     NSString *newNickName   = @"Bob";
+    NSString *newOrganization = [self fixtureForOrganization];
 
     NSMutableDictionary *newEmail       = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"bob@test.com", kABHomeLabel, nil];
     NSMutableDictionary *newPhone       = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"+442074503900", kABPersonPhoneIPhoneLabel, nil];
@@ -490,6 +504,7 @@ static int kSCContactPersonTestsfixtureCount = 5;
     subject.email       = newEmail;
     subject.phoneNumber = newPhone;
     subject.address     = newAddress;
+    subject.organization = newOrganization;
     
     STAssertTrue([subject updateRecord:subject.ABRecordID error:nil], @"Save record should be TRUE");
     

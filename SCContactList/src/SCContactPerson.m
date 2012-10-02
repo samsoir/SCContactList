@@ -46,7 +46,7 @@
         @"firstNamePhonetic",
         @"lastNamePhonetic",
         @"middleNamePhonetic",
-        @"organizatiion",
+        @"organization",
         @"jobTitle",
         @"department",
         @"note",
@@ -389,11 +389,6 @@
 
 - (ABMutableMultiValueRef)createMultiValueForProperty:(ABPropertyType)propertyType withDictionary:(NSDictionary *)dictionary
 {
-    if ( ! dictionary || ! [dictionary isKindOfClass:[NSDictionary class]])
-    {
-        return NULL;
-    }
-    
     ABMutableMultiValueRef multiValue = ABMultiValueCreateMutable(propertyType);
     
     int multiValueSize = [dictionary count];
@@ -417,7 +412,7 @@
     BOOL result = NO;
     
     NSDictionary *ABPropertyKeys = [self ABAddressBookKeyMap];
-    
+        
     for (NSString *fieldToDecorate in fieldsToDecorate)
     {
         ABPropertyID propertyID = [self ABPersonPropertyForKey:fieldToDecorate
@@ -463,7 +458,7 @@
                 }
             }
             else
-            {
+            {                
                 if ( ! ABRecordSetValue(record, propertyID, value, &setValueError))
                 {
                     if (error != NULL)
