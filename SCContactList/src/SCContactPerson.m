@@ -389,6 +389,11 @@
 
 - (ABMutableMultiValueRef)createMultiValueForProperty:(ABPropertyType)propertyType withDictionary:(NSDictionary *)dictionary
 {
+    if ( ! dictionary || ! [dictionary isKindOfClass:[NSDictionary class]])
+    {
+        return NULL;
+    }
+    
     ABMutableMultiValueRef multiValue = ABMultiValueCreateMutable(propertyType);
     
     int multiValueSize = [dictionary count];
@@ -444,14 +449,17 @@
             {
                 ABMutableMultiValueRef multiValue = [self createMultiValueForProperty:type withDictionary:value];
                 
-                if ( ! ABRecordSetValue(record, propertyID, multiValue, &setValueError))
+                if (multiValue != NULL)
                 {
-                    if (error != NULL)
+                    if ( ! ABRecordSetValue(record, propertyID, multiValue, &setValueError))
                     {
-                        *error = (NSError *)setValueError;
-                    }
-                    
-                    return result;
+                        if (error != NULL)
+                        {
+                            *error = (NSError *)setValueError;
+                        }
+                        
+                        return result;
+                    }                    
                 }
             }
             else

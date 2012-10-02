@@ -17,6 +17,8 @@
 
 #endif
 
+@class SCContactPerson;
+
 @interface SCContactGroup : SCContactRecord <SCContactRecordPersistence> {
 
     NSString     *_groupName;
