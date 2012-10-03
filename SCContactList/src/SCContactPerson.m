@@ -650,7 +650,7 @@
     
     if (record == NULL)
     {
-        NSLog(@"RecordID %i failed to load!", recordID);
+        NSLog(@"[SCContactPerson readRecord:error:] RecordID %i failed to load!", recordID);
     }
     
     result = [self readFromRecordRef:record error:error];

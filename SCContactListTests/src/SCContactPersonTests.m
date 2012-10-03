@@ -442,6 +442,7 @@ static int kSCContactPersonTestsfixtureCount = 5;
         }
     }
     
+    
     // Test email
     STAssertTrue([[subject.email objectForKey:(NSString *)kABHomeLabel] isEqualToString:[self fixtureHomeEmail]], @"Home email :%@ should match returned email: %@", [self fixtureHomeEmail], [subject.email objectForKey:(NSString *)kABHomeLabel]);
     
@@ -518,7 +519,9 @@ static int kSCContactPersonTestsfixtureCount = 5;
     NSString *savedNickName   = [(NSString *)ABRecordCopyValue(testSubjectRecord, kABPersonNicknameProperty) autorelease];;
     
     ABMultiValueRef addressValue = ABRecordCopyValue(testSubjectRecord, kABPersonAddressProperty);
+    ABMultiValueRef emailValue   = ABRecordCopyValue(testSubjectRecord, kABPersonEmailProperty);
     NSArray *addresses = [(NSArray *)ABMultiValueCopyArrayOfAllValues(addressValue) autorelease];
+    NSArray *emailAddresses = [(NSArray *)ABMultiValueCopyArrayOfAllValues(emailValue) autorelease];
     
     STAssertTrue([subject.firstName isEqualToString:savedFirstName], @"Subject firstname: %@ should match saved firstname: %@", subject.firstName, savedFirstName);
     STAssertTrue([subject.lastName isEqualToString:savedLastName], @"Subject lastname: %@ should match saved lastname: %@", subject.lastName, savedLastName);
@@ -528,6 +531,11 @@ static int kSCContactPersonTestsfixtureCount = 5;
     NSDictionary *savedAddress = [addresses objectAtIndex:0];
     
     STAssertTrue([[[subject.address objectForKey:(NSString *)kABHomeLabel] objectForKey:(NSString *)kABPersonAddressStreetKey] isEqualToString:[savedAddress objectForKey:(NSString *)kABPersonAddressStreetKey]], @"Subject Street Address: %@ should match saved Street Address: %@",[[subject.address objectForKey:(NSString *)kABHomeLabel] objectForKey:(NSString *)kABPersonAddressStreetKey], [savedAddress objectForKey:(NSString *)kABPersonAddressStreetKey]);
+
+    NSString *savedEmailAddress = [emailAddresses objectAtIndex:0];
+    
+    STAssertTrue([[subject.email objectForKey:(NSString *)kABHomeLabel] isEqualToString:savedEmailAddress], @"Subject Email Address: %@ should match saved Street Address: %@",[subject.email objectForKey:(NSString *)kABHomeLabel], savedEmailAddress);
+
     
     CFRelease(secondAddressBook);
     CFRelease(addressValue);

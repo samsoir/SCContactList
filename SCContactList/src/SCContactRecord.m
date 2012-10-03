@@ -201,7 +201,11 @@
             
             if (arrayKey != nil)
             {
-                [keys addObject:arrayKey];                
+                [keys addObject:arrayKey];
+            }
+            else if (arrayKey == nil && property == kABPersonEmailProperty)
+            {
+                [keys addObject:[NSString stringWithFormat:@"email%i", i]];
             }
             else
             {
