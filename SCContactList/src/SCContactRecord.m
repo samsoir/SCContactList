@@ -211,7 +211,8 @@
             {
                 if (i < [propertyArray count])
                 {
-                    [propertyArray removeObjectAtIndex:i];                    
+                    //Address Book keys MAY be nil/null - this permits those values to remain in the final MutableDictionary
+                    [keys addObject:kSCContactRecordKeyForUnkeyedEntry];
                 }
             }
         }

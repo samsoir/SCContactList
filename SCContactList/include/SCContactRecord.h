@@ -17,6 +17,7 @@
 
 #define kSCContactRecordDeleteError 10003
 #define kSCContactRecrodDeleteErrorKey @"errorMessage"
+#define kSCContactRecordKeyForUnkeyedEntry @"_$!<Facebook>!$_"
 
 #endif
 
