@@ -37,7 +37,6 @@
 
 @end
 
-#endif
 
 @interface SCContactRecord : NSObject <SCContactRecordPersistence> {
     ABRecordID           _ABRecordID;
@@ -79,3 +78,5 @@
 - (BOOL)deleteRecord:(ABRecordID)recordID error:(NSError **)error;
 
 @end
+
+#endif

@@ -16,8 +16,6 @@
 #define kSCContactListContactPersonBuffer 10
 #define kSCContactListContactGroupBuffer  10
 
-#endif
-
 typedef enum CFIndex {
     kSCContactListAuthorizationStatusNotDetermined = 0,
     kSCContactListAuthorizationStatusRestricted,
@@ -62,3 +60,5 @@ extern NSString *const SCContactAddressBookAuthorizationNotification;
                 overwrite:(BOOL)overwrite;
 
 @end
+
+#endif
