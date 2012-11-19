@@ -16,7 +16,6 @@
 
 #define kSCContactEmailHome kABHomeLabel
 #define kSCContactEmailWork kABWorkLabel
-#endif
 
 @interface SCContactPerson : SCContactRecord <SCContactRecordPersistence> {
     
@@ -112,3 +111,4 @@
 - (BOOL)updateRecord:(ABRecordID)recordID error:(NSError **)error;
 
 @end
+#endif

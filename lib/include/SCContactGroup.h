@@ -15,8 +15,6 @@
 
 #define kSCContactGroupMutableSetCapacity 10
 
-#endif
-
 @class SCContactPerson;
 
 @interface SCContactGroup : SCContactRecord <SCContactRecordPersistence> {
@@ -59,3 +57,4 @@
 - (void)removeContactRecords:(NSSet *)records;
 
 @end
+#endif

@@ -100,6 +100,12 @@
           fieldsToDecorate:changesToModel
                      error:&decorateError];
     
+    // Add image data if required
+    if (self.image != nil)
+    {
+        ABPersonSetImageData(record, (CFDataRef)self.image, NULL);
+    }
+    
     CFErrorRef addError = NULL;
     
     if ( ! ABAddressBookAddRecord(addressBook, record, &addError))
